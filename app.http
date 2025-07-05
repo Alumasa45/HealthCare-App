@@ -1,0 +1,572 @@
+
+@url = http://localhost:3000
+
+###############AUTHENTICATION MANAGEMENT###############
+# Sign in a user. 
+######
+POST {{url}}/auth
+Content-Type: application/json
+
+{
+  "Email": "auth@gmail.com",
+  "Password": "admin123"
+}
+
+###############USER MANAGEMENT###############
+# Create a new user.
+######
+POST {{url}}/users 
+Content-Type: application/json
+
+{
+  "Email": "auth@gmail.com",
+  "Password": "admin123",
+  "Phone_Number": "0713345678",
+  "User_Type": "Admin",
+  "First_Name": "Admin",
+  "Last_Name": "Tiwa",
+  "Date_of_Birth": "2000-10-10",
+  "Gender": "Female",
+  "Account_Status": "Active"
+}
+
+#Get all users.
+#####
+GET {{url}}/users
+
+# Get a user by ID.
+####
+GET {{url}}/users/1
+
+# Update a user by ID.
+#####
+PATCH {{url}}/users/2
+Content-Type: application/json
+
+{
+    "User_Type": "Doctor",
+    "Account_Status": "InActive"
+}
+
+# Delete a user by ID.
+#####
+DELETE {{url}}/users/1
+
+###############ADDRESS MANAGEMENT###############
+# Create a new address.
+######  
+POST {{url}}/addresses
+Content-Type: application/json
+
+{
+  "User_id": 2,
+  "Address_Type": "Home",
+  "Country": "Kenya",
+  "City": "Nairobi",
+  "Postal_Code": "00100"
+}
+
+# Get all address.
+#####
+GET {{url}}/addresses
+
+# Get an address by ID.
+##### 
+GET {{url}}/addresses/12
+
+# Update an address by ID.
+#####
+PATCH {{url}}/addresses/12
+Content-Type: application/json
+
+{
+  "Address_Type": "Work"
+}
+
+# Delete an address by ID.
+#####
+DELETE {{url}}/addresses/12
+
+###############PATIENTS MANAGEMENT###############
+# Create a new patient.
+######  
+POST {{url}}/patients
+Content-Type: application/json  
+
+{
+  "User_id": 2,
+  "Emergency_Contact_Name": "John Doe",
+  "Emergency_Contact_Phone": "0712345678",
+  "Emergency_Contact_Relationship": "Brother",
+  "Blood_Group": "O-",
+  "Height": 180.5,
+  "Weight": 75.0,
+  "Allergies": "None",
+  "Chronic_Conditions": "None",
+  "Insurance_Provider": "Health Insurance Co.",
+  "Insurance_Policy_Number": "HIC123456"
+}
+
+# Get all patients.
+#####
+GET {{url}}/patients
+
+# Get a patient by user ID.
+#####
+GET {{url}}/patients/2
+
+# Update a patient by user ID.
+#####
+PATCH {{url}}/patients/2
+Content-Type: application/json
+
+{
+  "Chronic_Conditions": "Diabetes"
+}
+
+# Delete a patient by user ID.
+##### 
+DELETE {{url}}/patients/2
+
+###############DOCTORS MANAGEMENT###############
+# Create a new doctor.  
+######
+POST {{url}}/doctors
+Content-Type: application/json
+
+{
+  "User_id":2,
+  "License_number": "DOC123456",
+  "Specialization": "Cardiology",
+  "Qualification": "MBBS, MD",
+  "Experience_Years": 10,
+  "Department": "Cardiology",
+  "Bio": "Experienced cardiologist with a passion for patient care.",
+  "Languages_Spoken": "English, Swahili",
+  "Is_Available_Online": true,
+  "Rating": 4.5,
+  "Reviews": "Excellent doctor with great bedside manner."
+}
+
+# Get all doctors.
+#####
+GET {{url}}/doctors
+
+# Get a doctor by ID.
+#####
+GET {{url}}/doctors/1
+
+# Update a doctor by ID.
+#####
+PATCH {{url}}/doctors/1
+Content-Type: application/json
+
+{
+  "Rating": 4.7,
+  "Reviews": "Very knowledgeable and attentive."
+}
+
+# Delete a doctor by ID.
+#####
+DELETE {{url}}/doctors/1
+
+###############MEDICAL RECORDS MANAGEMENT###############
+# Create a new medical record.
+######
+POST {{url}}/medical-records
+Content-Type: application/json
+
+{
+  "Patient_id": 2,
+  "Doctor_id": 1,
+  "Visit_Date": "2023-10-10",
+  "Diagnosis": "Flu",
+  "Symptoms": "Fever, Cough",
+  "Treatment_Plan": "Rest and hydration",
+  "Notes": "Follow up in one week",
+  "Follow_Up_Required": true,
+  "Follow_Up_Date": "2023-10-17"
+}
+
+# Get all records.
+#####
+GET {{url}}/medical-records
+
+# Get record by Id.
+#####
+GET {{url}}/medical-records/1
+
+# Update record by Id.
+#####
+PATCH {{url}}/medical-records/1
+Content-Type: application/json
+
+{
+  "Diagnosis": "Flu with complications",
+  "Treatment_Plan": "Rest, hydration, and medication"
+}
+
+#Delete record by Id.
+####
+DELETE {{url}}/medical-records/1
+
+##################DOCTOR SCHEDULE MANAGEMENT###############
+# Create a new doctor schedule.
+######
+POST {{url}}/doctor-schedule
+Content-Type: application/json
+
+{
+  "Doctor_id": 1,
+  "Day_Of_The_Week": "Monday",
+  "Start_Time": "08:00",
+  "End_Time": "17:00",
+  "Slot_Duration": 30,
+  "Is_Active": true
+}
+
+# Get all doctor schedules.
+#####
+GET {{url}}/doctor-schedule
+
+# Get a doctor schedule by ID.
+#####
+GET {{url}}/doctor-schedule/2
+
+# Update a doctor schedule by ID.
+#####
+PATCH {{url}}/doctor-schedule/2
+Content-Type: application/json
+
+{
+  "End_Time": "18:00"
+}
+
+# Delete a doctor schedule by ID.
+#####
+DELETE {{url}}/doctor-schedule/1
+
+###############APPOINTMENT MANAGEMENT###############
+# Create a new appointment.
+######
+POST {{url}}/appointments
+Content-Type: application/json
+
+{
+  "Patient_id": 2,
+  "Doctor_id": 1,
+  "Appointment_Date": "2023-10-15",
+  "Appointment_Time": "10:00",
+  "Appointment_Type": "In-Person",
+  "Status": "Scheduled",
+  "Reason_For_Visit": "Regular check-up",
+  "Notes": "Bring previous medical records",
+  "Payment_Status": "Transaction Pending"
+}
+
+# Get all appointments.
+#####
+GET {{url}}/appointments
+
+# Get an appointment by ID.
+#####
+GET {{url}}/appointments/1
+
+# Update an appointment by ID.
+#####
+PATCH {{url}}/appointments/1
+Content-Type: application/json
+
+{
+  "Status": "Completed",
+  "Notes": "Patient was advised to follow up in two weeks"
+}
+
+# Delete an appointment by ID.
+#####
+DELETE {{url}}/appointments/1
+
+###############APPOINTMENT SLOTS MANAGEMENT###############
+# Create a new appointment slot.
+######
+POST {{url}}/appointment-slots
+Content-Type: application/json
+
+{
+  "Appointment_id": 1,
+  "Doctor_id": 1,
+  "Slot_Date": "2023-10-15",
+  "Slot_Time": "10:00",
+  "Is_Available": true,
+  "Is_Blocked": false
+}
+
+# Get all appointment slots.
+#####
+GET {{url}}/appointment-slots
+
+# Get an appointment slot by ID.
+#####
+GET {{url}}/appointment-slots/1
+
+# Update an appointment slot by ID.
+#####
+PATCH {{url}}/appointment-slots/1
+Content-Type: application/json
+
+{
+  "Is_Available": true,
+  "Is_Blocked": true
+}
+
+# Delete an appointment slot by ID.
+#####
+DELETE {{url}}/appointment-slots/1
+
+###############PHARMACIES MANAGEMENT###############
+# Create a new pharmacy.
+######
+POST {{url}}/pharmacies
+Content-Type: application/json
+
+{
+  "User_id": 3,
+  "Pharmacy_Name": "HealthPlus Pharmacy",
+  "License_Number": "PHARM123456",
+  "Phone_Number": "0712345678",
+  "Email": "healthplus@gmail.com",
+  "Opening_Time": "08:00",
+  "Closing_Time": "20:00",
+  "Delivery_Available": true,
+  "Is_Verified": true,
+  "Rating": 4.8
+}
+
+# Get all pharmacies.
+#####
+GET {{url}}/pharmacies
+
+# Get a pharmacy by ID.
+#####
+GET {{url}}/pharmacies/1
+
+# Update a pharmacy by ID.
+#####
+PATCH {{url}}/pharmacies/1
+Content-Type: application/json
+
+{
+  "Pharmacy_Name": "HealthPlus Pharmacy Updated",
+  "Rating": 4.9
+}
+
+# Delete a pharmacy by ID.
+#####
+DELETE {{url}}/pharmacies/1
+
+###############MEDICINES MANAGEMENT###############
+# Create a new medicine.
+######
+POST {{url}}/medicines
+Content-Type: application/json
+
+{
+  "Medicine_Name": "Paracetamol",
+  "Brand_Name": "PainRelief",
+  "Manufacturer": "HealthPlus Pharmaceuticals",
+  "Category": "Pain Reliever",
+  "Dosage": "500mg",
+  "Strength": "Average",
+  "Description": "Used for pain relief and fever reduction.",
+  "Side_Effects": "Nausea, Dizziness",
+  "Storage_Instructions": "Store in a cool, dry place."
+}
+
+# Get all medicines.
+#####
+GET {{url}}/medicines
+
+# Get a medicine by ID.
+#####
+GET {{url}}/medicines/1
+
+# Update a medicine by ID.
+#####
+PATCH {{url}}/medicines/1
+Content-Type: application/json
+
+{
+  "Dosage": "650mg",
+  "Description": "Updated description for pain relief."
+}
+
+# Delete a medicine by ID.
+##### 
+DELETE {{url}}/medicines/1
+
+################PHARMACY INVENTORY MANAGEMENT###############
+# Create a new pharmacy inventory.
+######
+POST {{url}}/pharmacy-inventory
+Content-Type: application/json
+
+{
+  "Pharmacy_id": 1,
+  "Medicine_id": 1,
+  "Batch_Number": "BATCH123",
+  "Expiry_Date": "2025-10-10",
+  "Stock_Quantity": 100,
+  "Unit_Price": 50.0,
+  "Wholesale_Price": 45.0,
+  "Supplier_Name": "HealthPlus Suppliers",
+  "Last_Restocked": "2023-10-01"
+}
+
+# Get all pharmacy inventories.
+#####
+GET {{url}}/pharmacy-inventory
+
+# Get a pharmacy inventory by ID.
+#####
+GET {{url}}/pharmacy-inventory/1
+
+# Update a pharmacy inventory by ID.
+#####
+PATCH {{url}}/pharmacy-inventory/1
+Content-Type: application/json
+
+{
+  "Stock_Quantity": 120,
+  "Unit_Price": 55.0
+}
+
+# Delete a pharmacy inventory by ID.
+#####
+DELETE {{url}}/pharmacy-inventory/1
+
+###############PRESCRIPTIONS MANAGEMENT###############
+# Create a new prescription.
+######
+POST {{url}}/prescriptions  
+Content-Type: application/json
+
+{
+  "Patient_id": 2,
+  "Doctor_id": 1,
+  "Appointment_id": 1,
+  "Prescription_Number": "RX123456",
+  "Issue_Date": "2023-10-10",
+  "Validity_Period": "2023-10-24",
+  "Total_Amount": 1500.0,
+  "Status": "Active",
+  "Notes": "Take medication as prescribed."
+}
+
+# Get all prescriptions.
+#####
+GET {{url}}/prescriptions
+
+# Get a prescription by ID.
+#####
+GET {{url}}/prescriptions/1
+
+# Update a prescription by ID.
+#####
+PATCH {{url}}/prescriptions/1
+Content-Type: application/json
+
+{
+  "Status": "Completed",
+  "Notes": "Patient reported improvement in condition."
+}
+
+# Delete a prescription by ID.
+#####
+DELETE {{url}}/prescriptions/1
+
+###############PRESCRIPTION ITEMS MANAGEMENT###############
+# Create a new prescription item.
+######
+POST {{url}}/prescription-items 
+Content-Type: application/json
+
+{
+  "Prescription_id": 1,
+  "Medicine_id": 1,
+  "Quantity_Prescribed": 30,
+  "Dosage_Instructions": "Take one tablet every 6 hours",
+  "Frequency": "Every 6 hours",
+  "Duration": "7 days",
+  "Quantity_Dispensed": 30,
+  "Unit_Price": 50.0,
+  "Total_Price": 1500.0,
+  "Substitution_Allowed": true
+}
+
+# Get all prescription items.
+#####
+GET {{url}}/prescription-items
+
+# Get a prescription item by ID.
+#####
+GET {{url}}/prescription-items/1
+
+# Update a prescription item by ID.
+#####
+PATCH {{url}}/prescription-items/1
+Content-Type: application/json
+
+{
+  "Dosage": "650mg",
+  "Frequency": "Once a day"
+}
+
+# Delete a prescription item by ID.
+#####
+DELETE {{url}}/prescription-items/1
+
+###############MEDICINE ORDERS MANAGEMENT###############
+# Create a new medicine order.
+######
+POST {{url}}/medicine-orders
+Content-Type: application/json
+
+{
+  "Patient_id": 2,
+  "Pharmacy_id": 1,
+  "Prescription_id": 1,
+  "Order_Number": "ORD123456",
+  "Order_Date": "2023-10-10",
+  "Order_Type": "Prescription",
+  "Subtotal": 1500.0,
+  "Delivery_Charges": 100.0,
+  "Tax_Amount": 50.0,
+  "Total_Amount": 1650.0,
+  "Payment_Method": "Credit Card",
+  "Payment_Status": "Paid",
+  "Order_Status": "Pending",
+  "Delivery_Address": "123 Health Street, Nairobi",
+  "Delivery_Instructions": "Leave at the front door",
+  "Estimated_Delivery": "2023-10-12"
+}
+
+# Get all medicine orders.
+#####
+GET {{url}}/medicine-orders
+
+# Get a medicine order by ID.
+#####
+GET {{url}}/medicine-orders/1
+
+# Update a medicine order by ID.
+#####
+PATCH {{url}}/medicine-orders/1
+Content-Type: application/json
+{
+  "Status": "Completed",
+  "Delivery_Date": "2023-10-12"
+}
+
+# Delete a medicine order by ID.
+#####
+DELETE {{url}}/medicine-orders/1
