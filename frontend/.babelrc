@@ -1,0 +1,1 @@
+{\n  \"presets\": [\n    \"@babel/preset-env\",\n    [\"@babel/preset-react\", { \"runtime\": \"automatic\" }],\n    \"@babel/preset-typescript\"\n  ]\n}

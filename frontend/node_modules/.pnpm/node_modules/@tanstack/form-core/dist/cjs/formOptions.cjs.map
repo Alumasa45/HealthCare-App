@@ -1,0 +1,1 @@
+{"version":3,"file":"formOptions.cjs","sources":["../../src/formOptions.ts"],"sourcesContent":["import type { FormOptions } from './FormApi'\n\nexport function formOptions<\n  T extends Partial<\n    FormOptions<any, any, any, any, any, any, any, any, any, any>\n  >,\n>(defaultOpts: T) {\n  return defaultOpts\n}\n"],"names":[],"mappings":";;AAEO,SAAS,YAId,aAAgB;AACT,SAAA;AACT;;"}

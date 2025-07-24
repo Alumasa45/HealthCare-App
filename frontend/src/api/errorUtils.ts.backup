@@ -1,0 +1,18 @@
+import axios from "axios";
+
+export const handleApiError = (error: any): Error => {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message || error.message;
+    const status = error.response?.status;
+    return new Error(`Request failed (Status: ${status}): ${message}`);
+  }
+  return new Error("An unexpected error occurred");
+};
+
+export const createErrorMessage = (message: string): Error => {
+  return new Error(message);
+};
+
+export const isApiError = (error: any): boolean => {
+  return axios.isAxiosError(error);
+};

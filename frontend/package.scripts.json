@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "validate": "tsc --noEmit --skipLibCheck",
+    "validate:watch": "tsc --noEmit --skipLibCheck --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "build:check": "npm run type-check && npm run lint && npm run build"
+  }
+}

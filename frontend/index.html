@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
+    
+    <!-- Theme color that adapts to light/dark mode -->
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
+    
+    <!-- Enhanced meta description for healthcare app -->
+    <meta
+      name="description"
+      content="Custom Healthcare Development Solutions - Streamline healthcare operations with compliant digital solutions for appointments, telemedicine, and pharmacy management."
+    />
+    
+    <!-- Additional responsive and accessibility meta tags -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Apple touch icons with proper sizes -->
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo192.png" />
+    
+    <!-- Web app manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect to external domains for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <title>Healthcare Solutions - Custom Development Services</title>
+    
+    <!-- Dark mode detection script (runs before body loads) -->
+    <script>
+      // Detect and apply dark mode preference immediately
+      (function() {
+        const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const storedTheme = localStorage.getItem('theme');
+        
+        function updateTheme(isDark) {
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        }
+        
+        // Apply stored theme or system preference
+        if (storedTheme === 'dark' || (!storedTheme && darkModeMediaQuery.matches)) {
+          updateTheme(true);
+        } else {
+          updateTheme(false);
+        }
+        
+        // Listen for system theme changes
+        darkModeMediaQuery.addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            updateTheme(e.matches);
+          }
+        });
+        
+        // Expose theme toggle function globally
+        window.toggleTheme = function() {
+          const isDark = document.documentElement.classList.contains('dark');
+          const newTheme = isDark ? 'light' : 'dark';
+          localStorage.setItem('theme', newTheme);
+          updateTheme(newTheme === 'dark');
+        };
+      })();
+    </script>
+  </head>
+  <body class="antialiased">
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
