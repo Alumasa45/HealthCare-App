@@ -166,7 +166,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         },
       ];
 
-      // Add a random notification every 30 seconds (for demo)
       const interval = setInterval(() => {
         const randomNotification =
           sampleNotifications[

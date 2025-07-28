@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Healthcare Backend Connection Test</h1>
+        <p>Use this tool to test your deployed backend connection before deploying your frontend.</p>
+        
+        <div class="test-section">
+            <h3>Backend URL Configuration</h3>
+            <label>Backend URL:</label>
+            <input type="text" id="backendUrl" placeholder="https://your-deployed-backend-url.com" style="width: 400px; padding: 8px; margin: 10px 0;">
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connection-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>API Endpoints Test</h3>
+            <button onclick="testEndpoint('/users')">Test Users API</button>
+            <button onclick="testEndpoint('/pharmacies')">Test Pharmacies API</button>
+            <button onclick="testEndpoint('/doctors')">Test Doctors API</button>
+            <button onclick="testEndpoint('/medicines')">Test Medicines API</button>
+            <div id="endpoints-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>CORS Test</h3>
+            <button onclick="testCORS()">Test CORS Configuration</button>
+            <div id="cors-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testConnection() {
+            const url = document.getElementById('backendUrl').value || 'https://your-deployed-backend-url.com';
+            const resultDiv = document.getElementById('connection-result');
+            
+            resultDiv.innerHTML = '<p>Testing connection...</p>';
+            
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ Backend is reachable! Status: ${response.status}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ Backend responded with status: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Connection failed: ${error.message}</p>
+                                     <p>Make sure your backend is deployed and accessible.</p>`;
+            }
+        }
+
+        async function testEndpoint(endpoint) {
+            const baseUrl = document.getElementById('backendUrl').value || 'https://your-deployed-backend-url.com';
+            const url = baseUrl + endpoint;
+            const resultDiv = document.getElementById('endpoints-result');
+            
+            resultDiv.innerHTML = `<p>Testing ${endpoint}...</p>`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const count = Array.isArray(data) ? data.length : 'N/A';
+                    resultDiv.innerHTML = `<p class="success">✅ ${endpoint} works! Found ${count} items</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ ${endpoint} failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ ${endpoint} error: ${error.message}</p>`;
+            }
+        }
+
+        async function testCORS() {
+            const baseUrl = document.getElementById('backendUrl').value || 'https://your-deployed-backend-url.com';
+            const resultDiv = document.getElementById('cors-result');
+            
+            resultDiv.innerHTML = '<p>Testing CORS...</p>';
+            
+            try {
+                const response = await fetch(baseUrl + '/users', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type,Authorization'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ CORS is configured!</p>
+                                         <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="warning">⚠️ CORS preflight failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ CORS test failed: ${error.message}</p>
+                                     <p>Make sure your backend allows requests from this origin.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

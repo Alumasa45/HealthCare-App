@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Healthcare Backend Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Backend Health Check</h3>
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <button onclick="testSwagger()">Test Swagger Docs</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Login Test</h3>
+        <input type="email" id="email" placeholder="Email" value="test@healthcare.com"><br>
+        <input type="password" id="password" placeholder="Password" value="password123"><br>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Users Endpoint Test</h3>
+        <button onclick="testUsers()">Test Users Endpoint</button>
+        <div id="users-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://healthcare-app-60pj.onrender.com';
+
+        async function testBackendHealth() {
+            const result = document.getElementById('health-result');
+            result.innerHTML = '<p>Testing backend health...</p>';
+            
+            try {
+                const response = await fetch(API_BASE);
+                if (response.ok) {
+                    result.innerHTML = '<p class="success">✅ Backend is healthy!</p>';
+                } else {
+                    result.innerHTML = `<p class="error">❌ Backend returned: ${response.status}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Backend health check failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testSwagger() {
+            const result = document.getElementById('health-result');
+            result.innerHTML = '<p>Testing Swagger docs...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/docs`);
+                if (response.ok) {
+                    result.innerHTML = '<p class="success">✅ Swagger docs accessible!</p>';
+                } else {
+                    result.innerHTML = `<p class="error">❌ Swagger docs returned: ${response.status}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Swagger docs failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            result.innerHTML = '<p>Testing login...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({ Email: email, Password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<p class="success">✅ Login successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    result.innerHTML = `<p class="error">❌ Login failed: ${response.status}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Login error: ${error.message}</p>`;
+            }
+        }
+
+        async function testUsers() {
+            const result = document.getElementById('users-result');
+            result.innerHTML = '<p>Testing users endpoint...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    headers: {
+                        'Origin': 'http://localhost:3000'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<p class="success">✅ Users endpoint works! Found ${data.length} users</p>`;
+                } else {
+                    result.innerHTML = `<p class="error">❌ Users endpoint failed: ${response.status}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Users endpoint error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

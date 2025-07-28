@@ -267,7 +267,7 @@ const HealthcareLanding: React.FC = () => {
                   onClick={handleDashboardRedirect}
                   className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition-colors inline-block text-center font-medium"
                 >
-                  {user ? "View Dashboard" : "Get Started"}
+                  {user ? "View Dashboard" : "View Dashboard"}
                 </button>
                 <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
                   Contact Us

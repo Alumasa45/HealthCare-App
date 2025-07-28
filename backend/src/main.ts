@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use('/static', express.static(join(__dirname, '..', 'public')));
 
   const configService = app.get(ConfigService);
-  const PORT = configService.getOrThrow<number>('PORT');
+  const PORT = configService.get<number>('PORT', 3001); // Default to 3001 if PORT not set
 
   app.use((req, res, next) => {
     if (req.path === '/') {
@@ -61,6 +61,7 @@ async function bootstrap() {
     )
     .addTag('Billing', 'Billing and payment management operations.')
     .addServer('http://localhost:3001', 'Development server')
+    .addServer('https://healthcare-app-60pj.onrender.com', 'Production server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -93,13 +94,23 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   // Enhanced CORS configuration for Swagger and frontend
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // React frontend
-      'http://localhost:3001', // Backend/Swagger
-      'http://127.0.0.1:3001', // Alternative localhost
-      'http://localhost:5173', // Vite dev server
-    ],
+    origin: isProduction
+      ? [
+          'https://healthcare-app-60pj.onrender.com', // Your deployed backend (for Swagger)
+          'https://your-frontend-deployment-url.com', // Your deployed frontend
+          'http://localhost:3000', // Allow local development
+        ]
+      : [
+          'http://localhost:3000', // React frontend (development)
+          'http://localhost:3001', // Backend/Swagger
+          'http://127.0.0.1:3001', // Alternative localhost
+          'http://localhost:5173', // Vite dev server
+          'http://127.0.0.1:3000', // Alternative localhost for frontend
+          'https://healthcare-app-60pj.onrender.com', // Also allow production URL in dev
+        ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -114,7 +125,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  await app.listen(3001);
-  console.log('🚀Server is running on port 3001.');
+  await app.listen(PORT);
+  console.log(`🚀Server is running on port ${PORT}.`);
 }
 bootstrap();

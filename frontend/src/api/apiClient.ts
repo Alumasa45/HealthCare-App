@@ -1,11 +1,26 @@
 import axios from "axios";
 
+// Debug environment variables
+console.log("🔍 Environment Debug:");
+console.log("- VITE_API_URL:", import.meta.env.VITE_API_URL);
+console.log("- All env vars:", import.meta.env);
+console.log("- Mode:", import.meta.env.MODE);
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+  baseURL:
+    import.meta.env.VITE_API_URL || "https://healthcare-app-60pj.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000, // 30 seconds timeout for slow Render.com responses
 });
+
+// Log the API URL being used for debugging
+console.log(
+  "🌐 API Client configured with base URL:",
+  import.meta.env.VITE_API_URL || "https://healthcare-app-60pj.onrender.com"
+);
+console.log("🔧 Environment:", import.meta.env.MODE || "development");
 
 const getCookie = (name: string): string | null => {
   return document.cookie.split("; ").reduce((r, v) => {
@@ -15,7 +30,7 @@ const getCookie = (name: string): string | null => {
 };
 
 apiClient.interceptors.request.use((config) => {
-  // Try cookie first, fallback to localStorage
+  // Try cookie first, fallback to localStorage.
   const cookieToken = getCookie("authToken");
   const localToken = localStorage.getItem("authToken");
   const token = cookieToken || localToken;
@@ -46,22 +61,26 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("🔥 API Error:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method,
+    });
+
     if (error.response?.status === 401) {
-      console.error(
-        "🚫 Authentication failed - clearing tokens and redirecting"
-      );
+      console.error("🚫 Authentication failed - clearing tokens");
       localStorage.removeItem("authToken");
       document.cookie =
         "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-      // Don't redirect if we're already on auth page
-      if (
-        !window.location.pathname.includes("/auth") &&
-        !window.location.pathname.includes("/login")
-      ) {
-        window.location.href = "/auth";
-      }
+      // Don't redirect automatically - let the component handle it
+      console.log(
+        "Authentication failed - component should handle login redirect"
+      );
     }
+
     return Promise.reject(error);
   }
 );
