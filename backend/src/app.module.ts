@@ -71,17 +71,6 @@ import { DebugModule } from './debug/debug.module';
     PaymentModule,
     DebugModule,
   ],
-  // TypeOrmModule.forRoot({
-  //   type: 'postgres',
-  //   host: process.env.DB_HOST || 'localhost',
-  //   port:  5433,
-  //   username: process.env.DB_USERNAME || 'postgres',
-  //   password: process.env.DB_PASSWORD || 'aquinattaayo',
-  //   database: process.env.DB_DATABASE || 'healthcare',
-  //   entities: [__dirname + '/**/*.entity{.ts,.js}'],
-  //   synchronize: process.env.DB_SYNC === 'true' || true,
-  //   logging: process.env.DB_LOGGING === 'true' || false,
-  // }),
 
   controllers: [],
   providers: [
