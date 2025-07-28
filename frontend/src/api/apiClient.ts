@@ -7,8 +7,7 @@ console.log("- All env vars:", import.meta.env);
 console.log("- Mode:", import.meta.env.MODE);
 
 const apiClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL || "https://healthcare-app-60pj.onrender.com",
+  baseURL: "https://healthcare-app-60pj.onrender.com", // Force deployed URL
   headers: {
     "Content-Type": "application/json",
   },
@@ -18,7 +17,7 @@ const apiClient = axios.create({
 // Log the API URL being used for debugging
 console.log(
   "🌐 API Client configured with base URL:",
-  import.meta.env.VITE_API_URL || "https://healthcare-app-60pj.onrender.com"
+  "https://healthcare-app-60pj.onrender.com"
 );
 console.log("🔧 Environment:", import.meta.env.MODE || "development");
 

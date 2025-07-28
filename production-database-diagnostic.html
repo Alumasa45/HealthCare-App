@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production Database Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; width: 200px; border: 1px solid #ddd; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 5px; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🏥 Production Database Diagnostic Tool</h1>
+    <p>This tool helps diagnose login issues with your deployed backend.</p>
+    
+    <div class="test-section">
+        <h3>1. Backend Health Check</h3>
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <button onclick="openSwaggerDocs()">Open Swagger Docs</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Check Users in Database</h3>
+        <p><strong>CORS Workaround:</strong> Use Swagger UI to test endpoints</p>
+        <button onclick="openSwaggerUsers()">Open Users in Swagger</button>
+        <div id="users-result" class="result">
+            <p>Due to CORS restrictions, please use Swagger UI to test endpoints:</p>
+            <ol>
+                <li>Click "Open Swagger Docs" above</li>
+                <li>Find the "Users" section</li>
+                <li>Try the GET /users endpoint</li>
+                <li>If it returns an empty array [], your database has no users!</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test User Registration</h3>
+        <div>
+            <input type="email" id="reg-email" placeholder="Email" value="test@healthcare.com"><br>
+            <input type="password" id="reg-password" placeholder="Password" value="Test123!"><br>
+            <input type="text" id="reg-firstname" placeholder="First Name" value="Test"><br>
+            <input type="text" id="reg-lastname" placeholder="Last Name" value="User"><br>
+            <select id="reg-usertype">
+                <option value="Patient">Patient</option>
+                <option value="Doctor">Doctor</option>
+                <option value="Pharmacist">Pharmacist</option>
+            </select><br>
+            <button onclick="testRegistration()">Create Test User</button>
+        </div>
+        <div id="registration-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Login with Credentials</h3>
+        <div>
+            <input type="email" id="login-email" placeholder="Email" value="test@healthcare.com"><br>
+            <input type="password" id="login-password" placeholder="Password" value="Test123!"><br>
+            <button onclick="testLogin()">Test Login</button>
+        </div>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://healthcare-app-60pj.onrender.com';
+
+        async function testBackendHealth() {
+            const result = document.getElementById('health-result');
+            result.innerHTML = '<p>Testing backend health...</p>';
+            
+            try {
+                // Test if we can reach the backend at all
+                const response = await fetch(`${API_BASE}`, { 
+                    method: 'GET',
+                    mode: 'no-cors' // Bypass CORS for basic connectivity test
+                });
+                result.innerHTML = '<p class="success">✅ Backend is reachable! (Connection test passed)</p>';
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Backend is unreachable: ${error.message}</p>`;
+            }
+        }
+
+        function openSwaggerDocs() {
+            window.open(`${API_BASE}/api/docs`, '_blank');
+        }
+
+        function openSwaggerUsers() {
+            window.open(`${API_BASE}/api/docs#/Users/UsersController_listUsers`, '_blank');
+        }
+
+        async function checkUsers() {
+            const result = document.getElementById('users-result');
+            result.innerHTML = '<p>Checking users in database...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    headers: {
+                        'Origin': 'http://localhost:3000'
+                    }
+                });
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    if (users.length === 0) {
+                        result.innerHTML = '<p class="warning">⚠️ No users found in database! This is why login fails.</p>';
+                    } else {
+                        result.innerHTML = `<p class="success">✅ Found ${users.length} users in database</p>`;
+                        const userTypes = users.reduce((acc, user) => {
+                            acc[user.User_Type] = (acc[user.User_Type] || 0) + 1;
+                            return acc;
+                        }, {});
+                        result.innerHTML += `<pre>User breakdown: ${JSON.stringify(userTypes, null, 2)}</pre>`;
+                    }
+                } else {
+                    const errorData = await response.json();
+                    result.innerHTML = `<p class="error">❌ Failed to check users: ${response.status}</p><pre>${JSON.stringify(errorData, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Error checking users: ${error.message}</p>`;
+            }
+        }
+
+        async function testRegistration() {
+            const result = document.getElementById('registration-result');
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const firstName = document.getElementById('reg-firstname').value;
+            const lastName = document.getElementById('reg-lastname').value;
+            const userType = document.getElementById('reg-usertype').value;
+            
+            result.innerHTML = '<p>Creating test user...</p>';
+            
+            const userData = {
+                Email: email,
+                Password: password,
+                First_Name: firstName,
+                Last_Name: lastName,
+                User_Type: userType,
+                Date_of_Birth: "1990-01-01",
+                Phone_Number: "+1234567890",
+                Address: "Test Address"
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<p class="success">✅ User created successfully!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    result.innerHTML = `<p class="error">❌ User creation failed: ${response.status}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ User creation error: ${error.message}</p>`;
+            }
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            result.innerHTML = '<p>Testing login...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:3000'
+                    },
+                    body: JSON.stringify({ Email: email, Password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<p class="success">✅ Login successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    result.innerHTML = `<p class="error">❌ Login failed: ${response.status}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Login error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-run health check on load
+        window.onload = () => {
+            testBackendHealth();
+        };
+    </script>
+</body>
+</html>

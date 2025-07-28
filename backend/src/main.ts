@@ -102,6 +102,9 @@ async function bootstrap() {
           'https://healthcare-app-60pj.onrender.com', // Your deployed backend (for Swagger)
           'https://your-frontend-deployment-url.com', // Your deployed frontend
           'http://localhost:3000', // Allow local development
+          'http://127.0.0.1:3000', // Alternative localhost
+          'http://127.0.0.1:5500', // Live Server for testing
+          'http://localhost:5500', // Alternative Live Server
         ]
       : [
           'http://localhost:3000', // React frontend (development)
@@ -109,6 +112,8 @@ async function bootstrap() {
           'http://127.0.0.1:3001', // Alternative localhost
           'http://localhost:5173', // Vite dev server
           'http://127.0.0.1:3000', // Alternative localhost for frontend
+          'http://127.0.0.1:5500', // Live Server for testing
+          'http://localhost:5500', // Alternative Live Server
           'https://healthcare-app-60pj.onrender.com', // Also allow production URL in dev
         ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
