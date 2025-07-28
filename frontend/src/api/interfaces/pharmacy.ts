@@ -10,7 +10,6 @@ export interface PharmacyInventory {
   Purchase_Date: Date | string;
   Created_at?: Date | string;
   Updated_at?: Date | string;
-  // Nested medicine data
   medicine?: {
     Medicine_id: number;
     Medicine_Name: string;
@@ -22,8 +21,9 @@ export interface PharmacyInventory {
     Description: string;
     Side_Effects: string;
     Storage_Instructions: string;
+    Image_url?: string;
   };
-  // Nested pharmacy data
+
   pharmacy?: {
     Pharmacy_id: number;
     Pharmacy_Name: string;
@@ -62,6 +62,7 @@ export interface CartItem {
   inventory: PharmacyInventory;
   quantity: number;
   totalPrice: number;
+  Purchase_Date?: Date | string;
 }
 
 export interface Cart {

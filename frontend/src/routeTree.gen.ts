@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ThemeDemoRouteImport } from './routes/theme-demo'
 import { Route as SignUpRouteImport } from './routes/signUp'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as PharmaciesRouteImport } from './routes/pharmacies'
@@ -19,8 +20,20 @@ import { Route as AboutUsRouteImport } from './routes/aboutUs'
 import { Route as LayoutRouteRouteImport } from './routes/_layout/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DoctorSlotsRouteImport } from './routes/doctor/slots'
+import { Route as DoctorScheduleRouteImport } from './routes/doctor/schedule'
+import { Route as DoctorReportsRouteImport } from './routes/doctor/reports'
+import { Route as DoctorPrescriptionsRouteImport } from './routes/doctor/prescriptions'
+import { Route as DoctorPatientsRouteImport } from './routes/doctor/patients'
+import { Route as DoctorMedicalRecordsRouteImport } from './routes/doctor/medical-records'
+import { Route as DoctorAppointmentsRouteImport } from './routes/doctor/appointments'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSystemRouteImport } from './routes/admin/system'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminRegistrationsRouteImport } from './routes/admin/registrations'
+import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutRecordsRouteImport } from './routes/_layout/records'
+import { Route as LayoutProfileRouteImport } from './routes/_layout/profile'
 import { Route as LayoutPrescriptionsRouteImport } from './routes/_layout/prescriptions'
 import { Route as LayoutMessagesRouteImport } from './routes/_layout/messages'
 import { Route as LayoutDoctorSlotsRouteImport } from './routes/_layout/doctorSlots'
@@ -30,6 +43,11 @@ import { Route as LayoutChatRouteImport } from './routes/_layout/chat'
 import { Route as LayoutBillingRouteImport } from './routes/_layout/billing'
 import { Route as LayoutAppointmentsRouteImport } from './routes/_layout/appointments'
 
+const ThemeDemoRoute = ThemeDemoRouteImport.update({
+  id: '/theme-demo',
+  path: '/theme-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignUpRoute = SignUpRouteImport.update({
   id: '/signUp',
   path: '/signUp',
@@ -79,6 +97,61 @@ const DoctorSlotsRoute = DoctorSlotsRouteImport.update({
   path: '/doctor/slots',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DoctorScheduleRoute = DoctorScheduleRouteImport.update({
+  id: '/doctor/schedule',
+  path: '/doctor/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorReportsRoute = DoctorReportsRouteImport.update({
+  id: '/doctor/reports',
+  path: '/doctor/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorPrescriptionsRoute = DoctorPrescriptionsRouteImport.update({
+  id: '/doctor/prescriptions',
+  path: '/doctor/prescriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorPatientsRoute = DoctorPatientsRouteImport.update({
+  id: '/doctor/patients',
+  path: '/doctor/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorMedicalRecordsRoute = DoctorMedicalRecordsRouteImport.update({
+  id: '/doctor/medical-records',
+  path: '/doctor/medical-records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorAppointmentsRoute = DoctorAppointmentsRouteImport.update({
+  id: '/doctor/appointments',
+  path: '/doctor/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSystemRoute = AdminSystemRouteImport.update({
+  id: '/admin/system',
+  path: '/admin/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRegistrationsRoute = AdminRegistrationsRouteImport.update({
+  id: '/admin/registrations',
+  path: '/admin/registrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/admin/notifications',
+  path: '/admin/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -87,6 +160,11 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
 const LayoutRecordsRoute = LayoutRecordsRouteImport.update({
   id: '/records',
   path: '/records',
+  getParentRoute: () => LayoutRouteRoute,
+} as any)
+const LayoutProfileRoute = LayoutProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => LayoutRouteRoute,
 } as any)
 const LayoutPrescriptionsRoute = LayoutPrescriptionsRouteImport.update({
@@ -139,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/pharmacies': typeof PharmaciesRoute
   '/services': typeof ServicesRoute
   '/signUp': typeof SignUpRoute
+  '/theme-demo': typeof ThemeDemoRoute
   '/appointments': typeof LayoutAppointmentsRoute
   '/billing': typeof LayoutBillingRoute
   '/chat': typeof LayoutChatRoute
@@ -147,8 +226,20 @@ export interface FileRoutesByFullPath {
   '/doctorSlots': typeof LayoutDoctorSlotsRoute
   '/messages': typeof LayoutMessagesRoute
   '/prescriptions': typeof LayoutPrescriptionsRoute
+  '/profile': typeof LayoutProfileRoute
   '/records': typeof LayoutRecordsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/medical-records': typeof DoctorMedicalRecordsRoute
+  '/doctor/patients': typeof DoctorPatientsRoute
+  '/doctor/prescriptions': typeof DoctorPrescriptionsRoute
+  '/doctor/reports': typeof DoctorReportsRoute
+  '/doctor/schedule': typeof DoctorScheduleRoute
   '/doctor/slots': typeof DoctorSlotsRoute
 }
 export interface FileRoutesByTo {
@@ -160,6 +251,7 @@ export interface FileRoutesByTo {
   '/pharmacies': typeof PharmaciesRoute
   '/services': typeof ServicesRoute
   '/signUp': typeof SignUpRoute
+  '/theme-demo': typeof ThemeDemoRoute
   '/appointments': typeof LayoutAppointmentsRoute
   '/billing': typeof LayoutBillingRoute
   '/chat': typeof LayoutChatRoute
@@ -168,8 +260,20 @@ export interface FileRoutesByTo {
   '/doctorSlots': typeof LayoutDoctorSlotsRoute
   '/messages': typeof LayoutMessagesRoute
   '/prescriptions': typeof LayoutPrescriptionsRoute
+  '/profile': typeof LayoutProfileRoute
   '/records': typeof LayoutRecordsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/medical-records': typeof DoctorMedicalRecordsRoute
+  '/doctor/patients': typeof DoctorPatientsRoute
+  '/doctor/prescriptions': typeof DoctorPrescriptionsRoute
+  '/doctor/reports': typeof DoctorReportsRoute
+  '/doctor/schedule': typeof DoctorScheduleRoute
   '/doctor/slots': typeof DoctorSlotsRoute
 }
 export interface FileRoutesById {
@@ -183,6 +287,7 @@ export interface FileRoutesById {
   '/pharmacies': typeof PharmaciesRoute
   '/services': typeof ServicesRoute
   '/signUp': typeof SignUpRoute
+  '/theme-demo': typeof ThemeDemoRoute
   '/_layout/appointments': typeof LayoutAppointmentsRoute
   '/_layout/billing': typeof LayoutBillingRoute
   '/_layout/chat': typeof LayoutChatRoute
@@ -191,8 +296,20 @@ export interface FileRoutesById {
   '/_layout/doctorSlots': typeof LayoutDoctorSlotsRoute
   '/_layout/messages': typeof LayoutMessagesRoute
   '/_layout/prescriptions': typeof LayoutPrescriptionsRoute
+  '/_layout/profile': typeof LayoutProfileRoute
   '/_layout/records': typeof LayoutRecordsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/registrations': typeof AdminRegistrationsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/medical-records': typeof DoctorMedicalRecordsRoute
+  '/doctor/patients': typeof DoctorPatientsRoute
+  '/doctor/prescriptions': typeof DoctorPrescriptionsRoute
+  '/doctor/reports': typeof DoctorReportsRoute
+  '/doctor/schedule': typeof DoctorScheduleRoute
   '/doctor/slots': typeof DoctorSlotsRoute
 }
 export interface FileRouteTypes {
@@ -206,6 +323,7 @@ export interface FileRouteTypes {
     | '/pharmacies'
     | '/services'
     | '/signUp'
+    | '/theme-demo'
     | '/appointments'
     | '/billing'
     | '/chat'
@@ -214,8 +332,20 @@ export interface FileRouteTypes {
     | '/doctorSlots'
     | '/messages'
     | '/prescriptions'
+    | '/profile'
     | '/records'
     | '/settings'
+    | '/admin/notifications'
+    | '/admin/registrations'
+    | '/admin/reports'
+    | '/admin/system'
+    | '/admin/users'
+    | '/doctor/appointments'
+    | '/doctor/medical-records'
+    | '/doctor/patients'
+    | '/doctor/prescriptions'
+    | '/doctor/reports'
+    | '/doctor/schedule'
     | '/doctor/slots'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -227,6 +357,7 @@ export interface FileRouteTypes {
     | '/pharmacies'
     | '/services'
     | '/signUp'
+    | '/theme-demo'
     | '/appointments'
     | '/billing'
     | '/chat'
@@ -235,8 +366,20 @@ export interface FileRouteTypes {
     | '/doctorSlots'
     | '/messages'
     | '/prescriptions'
+    | '/profile'
     | '/records'
     | '/settings'
+    | '/admin/notifications'
+    | '/admin/registrations'
+    | '/admin/reports'
+    | '/admin/system'
+    | '/admin/users'
+    | '/doctor/appointments'
+    | '/doctor/medical-records'
+    | '/doctor/patients'
+    | '/doctor/prescriptions'
+    | '/doctor/reports'
+    | '/doctor/schedule'
     | '/doctor/slots'
   id:
     | '__root__'
@@ -249,6 +392,7 @@ export interface FileRouteTypes {
     | '/pharmacies'
     | '/services'
     | '/signUp'
+    | '/theme-demo'
     | '/_layout/appointments'
     | '/_layout/billing'
     | '/_layout/chat'
@@ -257,8 +401,20 @@ export interface FileRouteTypes {
     | '/_layout/doctorSlots'
     | '/_layout/messages'
     | '/_layout/prescriptions'
+    | '/_layout/profile'
     | '/_layout/records'
     | '/_layout/settings'
+    | '/admin/notifications'
+    | '/admin/registrations'
+    | '/admin/reports'
+    | '/admin/system'
+    | '/admin/users'
+    | '/doctor/appointments'
+    | '/doctor/medical-records'
+    | '/doctor/patients'
+    | '/doctor/prescriptions'
+    | '/doctor/reports'
+    | '/doctor/schedule'
     | '/doctor/slots'
   fileRoutesById: FileRoutesById
 }
@@ -272,11 +428,30 @@ export interface RootRouteChildren {
   PharmaciesRoute: typeof PharmaciesRoute
   ServicesRoute: typeof ServicesRoute
   SignUpRoute: typeof SignUpRoute
+  ThemeDemoRoute: typeof ThemeDemoRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminRegistrationsRoute: typeof AdminRegistrationsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSystemRoute: typeof AdminSystemRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  DoctorAppointmentsRoute: typeof DoctorAppointmentsRoute
+  DoctorMedicalRecordsRoute: typeof DoctorMedicalRecordsRoute
+  DoctorPatientsRoute: typeof DoctorPatientsRoute
+  DoctorPrescriptionsRoute: typeof DoctorPrescriptionsRoute
+  DoctorReportsRoute: typeof DoctorReportsRoute
+  DoctorScheduleRoute: typeof DoctorScheduleRoute
   DoctorSlotsRoute: typeof DoctorSlotsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/theme-demo': {
+      id: '/theme-demo'
+      path: '/theme-demo'
+      fullPath: '/theme-demo'
+      preLoaderRoute: typeof ThemeDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signUp': {
       id: '/signUp'
       path: '/signUp'
@@ -347,6 +522,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorSlotsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/doctor/schedule': {
+      id: '/doctor/schedule'
+      path: '/doctor/schedule'
+      fullPath: '/doctor/schedule'
+      preLoaderRoute: typeof DoctorScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor/reports': {
+      id: '/doctor/reports'
+      path: '/doctor/reports'
+      fullPath: '/doctor/reports'
+      preLoaderRoute: typeof DoctorReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor/prescriptions': {
+      id: '/doctor/prescriptions'
+      path: '/doctor/prescriptions'
+      fullPath: '/doctor/prescriptions'
+      preLoaderRoute: typeof DoctorPrescriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor/patients': {
+      id: '/doctor/patients'
+      path: '/doctor/patients'
+      fullPath: '/doctor/patients'
+      preLoaderRoute: typeof DoctorPatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor/medical-records': {
+      id: '/doctor/medical-records'
+      path: '/doctor/medical-records'
+      fullPath: '/doctor/medical-records'
+      preLoaderRoute: typeof DoctorMedicalRecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctor/appointments': {
+      id: '/doctor/appointments'
+      path: '/doctor/appointments'
+      fullPath: '/doctor/appointments'
+      preLoaderRoute: typeof DoctorAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/system': {
+      id: '/admin/system'
+      path: '/admin/system'
+      fullPath: '/admin/system'
+      preLoaderRoute: typeof AdminSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/registrations': {
+      id: '/admin/registrations'
+      path: '/admin/registrations'
+      fullPath: '/admin/registrations'
+      preLoaderRoute: typeof AdminRegistrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/admin/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -359,6 +611,13 @@ declare module '@tanstack/react-router' {
       path: '/records'
       fullPath: '/records'
       preLoaderRoute: typeof LayoutRecordsRouteImport
+      parentRoute: typeof LayoutRouteRoute
+    }
+    '/_layout/profile': {
+      id: '/_layout/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof LayoutProfileRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
     '/_layout/prescriptions': {
@@ -429,6 +688,7 @@ interface LayoutRouteRouteChildren {
   LayoutDoctorSlotsRoute: typeof LayoutDoctorSlotsRoute
   LayoutMessagesRoute: typeof LayoutMessagesRoute
   LayoutPrescriptionsRoute: typeof LayoutPrescriptionsRoute
+  LayoutProfileRoute: typeof LayoutProfileRoute
   LayoutRecordsRoute: typeof LayoutRecordsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
 }
@@ -442,6 +702,7 @@ const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   LayoutDoctorSlotsRoute: LayoutDoctorSlotsRoute,
   LayoutMessagesRoute: LayoutMessagesRoute,
   LayoutPrescriptionsRoute: LayoutPrescriptionsRoute,
+  LayoutProfileRoute: LayoutProfileRoute,
   LayoutRecordsRoute: LayoutRecordsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
 }
@@ -460,6 +721,18 @@ const rootRouteChildren: RootRouteChildren = {
   PharmaciesRoute: PharmaciesRoute,
   ServicesRoute: ServicesRoute,
   SignUpRoute: SignUpRoute,
+  ThemeDemoRoute: ThemeDemoRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminRegistrationsRoute: AdminRegistrationsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSystemRoute: AdminSystemRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  DoctorAppointmentsRoute: DoctorAppointmentsRoute,
+  DoctorMedicalRecordsRoute: DoctorMedicalRecordsRoute,
+  DoctorPatientsRoute: DoctorPatientsRoute,
+  DoctorPrescriptionsRoute: DoctorPrescriptionsRoute,
+  DoctorReportsRoute: DoctorReportsRoute,
+  DoctorScheduleRoute: DoctorScheduleRoute,
   DoctorSlotsRoute: DoctorSlotsRoute,
 }
 export const routeTree = rootRouteImport

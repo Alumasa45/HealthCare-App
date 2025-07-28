@@ -1,8 +1,10 @@
-import type { Prescription } from "@/api/interfaces/prescription"
+import type { Prescription } from "@/api/interfaces/prescription";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { prescriptionapi } from "@/api/prescriptions";
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
+import { ShoppingCart } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,7 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import Loader from "@/constants/Loader";
 import { DataTableSkeleton } from "./ui/table-skeleton";
 
@@ -28,7 +31,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
   onDelete,
   onView,
 }) => {
-      //state management.
+  //state management.
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +54,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
     setIsOpen(false);
   };
 
-    return (
+  return (
     <div className="relative inline-block" ref={dropdownRef}>
       {/* Three dots to trigger the button. */}
       <button
@@ -143,7 +146,11 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
 };
 
 const Prescriptions = () => {
-  const { data: prescriptions, isLoading, error } = useQuery({
+  const {
+    data: prescriptions,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["prescriptions"],
     queryFn: prescriptionapi.findAll,
   });
@@ -177,45 +184,86 @@ const Prescriptions = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow overflow-visible relative">
         <Table>
-  <TableCaption>Your Prescriptions have been listed here.</TableCaption>
-  <TableHeader className="text bg-purple-300 rounded-lg">
-    <TableRow>
-      <TableHead >Medicine Name</TableHead>
-      <TableHead>Prescribed Amount in grams</TableHead>
-      <TableHead>Issue Date</TableHead>
-      <TableHead>Validity period</TableHead>
-      <TableHead className="text-right">Amount</TableHead>
-      <TableHead className="text-right">Status</TableHead>
-      <TableHead className="text-right">Notes</TableHead>
-      <TableHead className="text-right">Actions</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {prescriptions?.map((prescription) => (
-      <TableRow key={prescription.Prescription_id}>
-      <TableCell className="font-medium">{prescription.Medicine_Name}</TableCell>
-      <TableCell>{prescription.Prescription_Number}</TableCell>
-      <TableCell>{prescription.Issue_Date instanceof Date ? prescription.Issue_Date.toLocaleDateString() : String(prescription.Issue_Date)}</TableCell>
-      <TableCell className="text-right">{prescription.Validity_Period instanceof Date? prescription.Validity_Period.toLocaleDateString(): String(prescription.Validity_Period)}</TableCell>
-      <TableCell className="text-right">{prescription.Total_Amount}</TableCell>
-      <TableCell className="text-right">{prescription.Status}</TableCell>
-      <TableCell className="text-right">{prescription.Notes}</TableCell>
-      <TableCell className="text-right">
-        <TableRowActions
-        prescription={prescription}
-        onEdit={() => { /* TODO: implement edit functionality */ }}
-        onDelete={() => { /* TODO: implement delete functionality */ }}
-        onView={() => { /* TODO: implement view functionality */ }}
-        />
-      </TableCell>
-    </TableRow>
-    ))}
-    
-  </TableBody>
-</Table>
+          <TableCaption>Your Prescriptions have been listed here.</TableCaption>
+          <TableHeader className="text bg-purple-300 rounded-lg">
+            <TableRow>
+              <TableHead>Medicine Name</TableHead>
+              <TableHead>Prescribed Amount in grams</TableHead>
+              <TableHead>Issue Date</TableHead>
+              <TableHead>Validity period</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Status</TableHead>
+              <TableHead className="text-right">Notes</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
+              <TableHead className="text-center">Pharmacy</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {prescriptions?.map((prescription) => (
+              <TableRow key={prescription.Prescription_id}>
+                <TableCell className="font-medium">
+                  {prescription.Medicine_Name}
+                </TableCell>
+                <TableCell>{prescription.Prescription_Number}</TableCell>
+                <TableCell>
+                  {prescription.Issue_Date instanceof Date
+                    ? prescription.Issue_Date.toLocaleDateString()
+                    : String(prescription.Issue_Date)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {prescription.Validity_Period instanceof Date
+                    ? prescription.Validity_Period.toLocaleDateString()
+                    : String(prescription.Validity_Period)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {prescription.Total_Amount}
+                </TableCell>
+                <TableCell className="text-right">
+                  {prescription.Status}
+                </TableCell>
+                <TableCell className="text-right">
+                  {prescription.Notes}
+                </TableCell>
+                <TableCell className="text-center">
+                  <TableRowActions
+                    prescription={prescription}
+                    onEdit={() => {
+                      /* TODO: implement edit functionality */
+                    }}
+                    onDelete={() => {
+                      /* TODO: implement delete functionality */
+                    }}
+                    onView={() => {
+                      /* TODO: implement view functionality */
+                    }}
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  {prescription.Status === "Active" ? (
+                    <Link to="/pharmacies" className="inline-block">
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        Go to Pharmacy
+                      </Button>
+                    </Link>
+                  ) : (
+                    <span className="text-gray-400 text-sm">
+                      {prescription.Status === "Completed"
+                        ? "Completed"
+                        : "Expired"}
+                    </span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
 };
 
-export default Prescriptions
+export default Prescriptions;

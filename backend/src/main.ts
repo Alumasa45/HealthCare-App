@@ -9,8 +9,7 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({
-  }));
+  app.useGlobalPipes(new ValidationPipe({}));
 
   app.use('/static', express.static(join(__dirname, '..', 'public')));
 
@@ -27,9 +26,21 @@ async function bootstrap() {
   // Swagger configuration.
   const config = new DocumentBuilder()
     .setTitle('Healthcare Management System API.')
-    .setDescription('Comprehensive API for managing healthcare services, patients, prescriptions, medicine order and tracking, pharmmacies, and medical records.')
+    .setDescription(
+      'Comprehensive API for managing healthcare services, patients, prescriptions, medicine order and tracking, pharmmacies, and medical records.',
+    )
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // This name here is important for matching up with @ApiBearerAuth() in your controller!
+    )
     .addTag('Users', 'Users management operations.')
     .addTag('Patients', 'Patient management operations.')
     .addTag('Doctors', 'Doctor management operations.')
@@ -44,12 +55,14 @@ async function bootstrap() {
     .addTag('Prescriptions', 'Prescriptions management operations.')
     .addTag('PrescriptionItems', 'Prescription items management operations.')
     .addTag('MedicineOrders', 'Medicine orders management operations.')
-    .addTag('TeleMedicineSessions', 'Tele Medicine orders management operations.')
+    .addTag(
+      'TeleMedicineSessions',
+      'Tele Medicine orders management operations.',
+    )
     .addTag('Billing', 'Billing and payment management operations.')
     .addServer('http://localhost:3001', 'Development server')
-    .addServer('http://api.healthcare.com', 'Production server')
-    .build()
-    
+    .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
     jsonDocumentUrl: 'api/api-json',
@@ -73,14 +86,32 @@ async function bootstrap() {
       .swagger-ui .scheme-container { margin-top: 20px; }
     `,
     customSiteTitle: 'HealthCare Management API Documentation.',
-    customfavIcon: '/hospital.png'
+    customfavIcon: '/hospital.png',
   });
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+
+  // Enhanced CORS configuration for Swagger and frontend
   app.enableCors({
-    origin: '*', 
+    origin: [
+      'http://localhost:3000', // React frontend
+      'http://localhost:3001', // Backend/Swagger
+      'http://127.0.0.1:3001', // Alternative localhost
+      'http://localhost:5173', // Vite dev server
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+      'Access-Control-Allow-Headers',
+    ],
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   await app.listen(3001);

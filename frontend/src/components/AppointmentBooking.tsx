@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSessionBilling } from "@/hooks/useSessionBilling";
 import { doctorApi } from "@/api/doctors";
 import { scheduleApi } from "@/api/schedules";
 import { slotApi } from "@/api/appointmentSlots";
@@ -88,6 +89,7 @@ interface AppointmentFormData {
 
 export function AppointmentBooking() {
   const { user } = useAuth();
+  const { addSessionItem } = useSessionBilling();
   const [isOpen, setIsOpen] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -101,7 +103,7 @@ export function AppointmentBooking() {
 
   const [formData, setFormData] = useState<AppointmentFormData>({
     Doctor_id: "",
-    Patient_id: 0, 
+    Patient_id: 0,
     Appointment_Date: "",
     Appointment_Time: "",
     Appointment_Type: AppointmentType.InPerson,
@@ -384,9 +386,35 @@ export function AppointmentBooking() {
       const response = await appointmentApi.register(appointmentData);
       console.log("Appointment created:", response);
 
+      // Add consultation fee to session billing
+      const consultationFee = 2000; // Standard consultation fee - can be dynamic based on doctor/appointment type
+      const selectedDoctorData = doctors.find(
+        (d) => parseInt(d.Doctor_id) === Doctor_id
+      );
+      addSessionItem({
+        type: "consultation",
+        id: response.Appointment_id,
+        amount: consultationFee,
+        description: `Consultation with Dr. ${
+          selectedDoctorData?.First_Name || ""
+        } ${selectedDoctorData?.Last_Name || ""} on ${format(
+          new Date(formData.Appointment_Date),
+          "MMM dd, yyyy"
+        )}`,
+        details: {
+          appointmentId: response.Appointment_id,
+          doctorId: Doctor_id,
+          appointmentDate: formData.Appointment_Date,
+          appointmentTime: formData.Appointment_Time,
+          appointmentType: formData.Appointment_Type,
+        },
+      });
+
       // await slotApi.update(selectedSlot.Slot_id, { Is_Available: false });
 
-      toast.success("Appointment booked successfully!");
+      toast.success(
+        "Appointment booked successfully! Consultation fee added to your session."
+      );
       setIsOpen(false);
       resetForm();
     } catch (error) {

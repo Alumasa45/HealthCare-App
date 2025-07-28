@@ -1,0 +1,22 @@
+# Test getting a fresh token and using it
+
+### Step 1: Login to get fresh token
+POST http://localhost:3001/auth
+Content-Type: application/json
+
+{
+  "Email": "auth@gmail.com",
+  "Password": "admin123"
+}
+
+### Step 2: Test with the fresh token (REPLACE THE TOKEN BELOW)
+GET http://localhost:3001/users
+Authorization: Bearer PASTE_FRESH_TOKEN_HERE
+
+### Step 3: Test debug endpoint
+GET http://localhost:3001/debug/token-debug
+Authorization: Bearer PASTE_FRESH_TOKEN_HERE
+
+### Step 4: Test debug auth endpoint  
+GET http://localhost:3001/debug/auth-test
+Authorization: Bearer PASTE_FRESH_TOKEN_HERE

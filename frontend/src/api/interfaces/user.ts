@@ -1,5 +1,3 @@
-import type { Doctors } from "./doctor";
-
 export interface User {
   User_id: number;
   Email: string;
@@ -36,7 +34,7 @@ export interface RegisterData extends LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  hashedRefreshToken: string;
   user: User;
-  doctor: Doctors;
 }

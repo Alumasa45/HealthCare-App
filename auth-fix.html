@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Healthcare Auth Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .step { border: 1px solid #ddd; margin: 15px 0; padding: 15px; border-radius: 5px; }
+        .success { color: #28a745; background: #d4edda; border-color: #c3e6cb; }
+        .error { color: #dc3545; background: #f8d7da; border-color: #f5c6cb; }
+        .info { color: #17a2b8; background: #d1ecf1; border-color: #bee5eb; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        textarea { width: 100%; height: 120px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; }
+        .token-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; margin: 10px 0; }
+        .instructions { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Healthcare Auth Debug & Fix</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li><strong>Step 1:</strong> Click "Get Fresh Token" to login and get a new JWT</li>
+                <li><strong>Step 2:</strong> Copy the token from the textarea below</li>
+                <li><strong>Step 3:</strong> Test the token to make sure it works</li>
+                <li><strong>Step 4:</strong> Use this token in Swagger by clicking "Authorize" and pasting it</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🔑 Step 1: Get Fresh JWT Token</h3>
+            <button onclick="getFreshToken()">Get Fresh Token</button>
+            <div id="login-status"></div>
+            
+            <div class="token-box">
+                <label><strong>Fresh JWT Token (copy this for Swagger):</strong></label>
+                <textarea id="fresh-token" placeholder="Click 'Get Fresh Token' button above..."></textarea>
+                <button onclick="copyToken()">📋 Copy Token</button>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>✅ Step 2: Test Token Validity</h3>
+            <button onclick="testToken()">Test Token</button>
+            <div id="test-status"></div>
+        </div>
+
+        <div class="step">
+            <h3>👥 Step 3: Test Users Endpoint</h3>
+            <button onclick="testUsers()">Test Users Endpoint</button>
+            <div id="users-status"></div>
+        </div>
+
+        <div class="step">
+            <h3>🔧 Step 4: Swagger Instructions</h3>
+            <div class="info">
+                <p><strong>To use in Swagger:</strong></p>
+                <ol>
+                    <li>Copy the token from Step 1</li>
+                    <li>Go to <a href="http://localhost:3001/api/docs" target="_blank">http://localhost:3001/api/docs</a></li>
+                    <li>Click the "Authorize" button (🔒) at the top right</li>
+                    <li>Paste the token in the "Value" field (don't add "Bearer" - Swagger adds it automatically)</li>
+                    <li>Click "Authorize" then "Close"</li>
+                    <li>Try the GET /users endpoint</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        let currentToken = '';
+
+        function setStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `step ${type}`;
+            element.innerHTML = message;
+        }
+
+        async function getFreshToken() {
+            setStatus('login-status', '🔄 Getting fresh token...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Email: 'auth@gmail.com',
+                        Password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.accessToken;
+                    document.getElementById('fresh-token').value = currentToken;
+                    
+                    setStatus('login-status', `✅ Fresh token obtained! Length: ${currentToken.length} characters`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    setStatus('login-status', `❌ Login failed: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                setStatus('login-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function copyToken() {
+            const tokenField = document.getElementById('fresh-token');
+            tokenField.select();
+            document.execCommand('copy');
+            alert('Token copied to clipboard! 📋');
+        }
+
+        async function testToken() {
+            const token = document.getElementById('fresh-token').value || currentToken;
+            
+            if (!token) {
+                setStatus('test-status', '❌ No token to test. Get a fresh token first.', 'error');
+                return;
+            }
+
+            setStatus('test-status', '🔄 Testing token...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/debug/auth-test`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus('test-status', `✅ Token is valid! User: ${data.email} (${data.userType})`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    setStatus('test-status', `❌ Token test failed: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                setStatus('test-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUsers() {
+            const token = document.getElementById('fresh-token').value || currentToken;
+            
+            if (!token) {
+                setStatus('users-status', '❌ No token to test. Get a fresh token first.', 'error');
+                return;
+            }
+
+            setStatus('users-status', '🔄 Testing users endpoint...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus('users-status', `✅ Users endpoint works! Found ${data.length} users`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    setStatus('users-status', `❌ Users endpoint failed: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                setStatus('users-status', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test server connection on load
+        window.onload = async () => {
+            try {
+                const response = await fetch(`${API_BASE}/debug/public`);
+                if (response.ok) {
+                    console.log('✅ Server is running');
+                } else {
+                    alert('⚠️ Server might not be running. Please start the backend first.');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to server. Please make sure the backend is running on port 3001.');
+            }
+        };
+    </script>
+</body>
+</html>

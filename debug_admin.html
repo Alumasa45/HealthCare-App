@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h3>Authentication Status</h3>
+        <div id="auth-status"></div>
+        <button onclick="checkAuth()">Check Authentication</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>API Testing</h3>
+        <div id="api-status"></div>
+        <button onclick="testUsersAPI()">Test Users API</button>
+        <button onclick="testDoctorsAPI()">Test Doctors API</button>
+        <button onclick="testAllAPIs()">Test All APIs</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>User Type Check</h3>
+        <div id="user-type-status"></div>
+        <button onclick="checkUserType()">Check User Type</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Debug Output</h3>
+        <pre id="debug-output"></pre>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('debug-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('debug-output').innerHTML = '';
+        }
+        
+        function getCookie(name) {
+            return document.cookie.split('; ').reduce((r, v) => {
+                const parts = v.split('=');
+                return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+            }, '');
+        }
+        
+        function checkAuth() {
+            const cookieToken = getCookie('authToken');
+            const localToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('currentUser');
+            const cookieUserData = getCookie('userData');
+            
+            const authDiv = document.getElementById('auth-status');
+            let html = '<ul>';
+            html += `<li>Cookie Token: ${cookieToken ? '✅ Present' : '❌ Missing'}</li>`;
+            html += `<li>LocalStorage Token: ${localToken ? '✅ Present' : '❌ Missing'}</li>`;
+            html += `<li>LocalStorage User: ${userData ? '✅ Present' : '❌ Missing'}</li>`;
+            html += `<li>Cookie User Data: ${cookieUserData ? '✅ Present' : '❌ Missing'}</li>`;
+            html += '</ul>';
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    html += `<p><strong>User Info:</strong><br>`;
+                    html += `Name: ${user.First_Name} ${user.Last_Name}<br>`;
+                    html += `Email: ${user.Email}<br>`;
+                    html += `Type: ${user.User_Type}<br>`;
+                    html += `ID: ${user.User_id}</p>`;
+                } catch (e) {
+                    html += `<p class="error">Error parsing user data: ${e.message}</p>`;
+                }
+            }
+            
+            authDiv.innerHTML = html;
+            
+            log(`Auth check completed. Token available: ${!!(cookieToken || localToken)}`);
+        }
+        
+        async function makeAPIRequest(endpoint) {
+            const token = getCookie('authToken') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+            
+            log(`Making request to ${endpoint}...`);
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            log(`Response status: ${response.status} ${response.statusText}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                log(`Error response: ${errorText}`, 'error');
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            const data = await response.json();
+            log(`Success! Received ${Array.isArray(data) ? data.length : 'non-array'} items`, 'success');
+            return data;
+        }
+        
+        async function testUsersAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<p>Testing Users API...</p>';
+            
+            try {
+                const users = await makeAPIRequest('/users');
+                statusDiv.innerHTML = `<p class="success">✅ Users API: ${users.length} users found</p>`;
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">❌ Users API Error: ${error.message}</p>`;
+                log(`Users API error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDoctorsAPI() {
+            try {
+                const doctors = await makeAPIRequest('/doctors');
+                log(`Doctors API success: ${doctors.length} doctors found`, 'success');
+            } catch (error) {
+                log(`Doctors API error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllAPIs() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<p>Testing all APIs...</p>';
+            
+            const endpoints = ['/users', '/doctors', '/patients', '/pharmacists'];
+            const results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const data = await makeAPIRequest(endpoint);
+                    results.push(`✅ ${endpoint}: ${Array.isArray(data) ? data.length : 'OK'} items`);
+                } catch (error) {
+                    results.push(`❌ ${endpoint}: ${error.message}`);
+                }
+            }
+            
+            statusDiv.innerHTML = `<ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>`;
+        }
+        
+        function checkUserType() {
+            const userData = localStorage.getItem('currentUser');
+            const statusDiv = document.getElementById('user-type-status');
+            
+            if (!userData) {
+                statusDiv.innerHTML = '<p class="error">❌ No user data found</p>';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(userData);
+                const userType = user.User_Type;
+                const normalizedType = userType?.toLowerCase();
+                
+                let html = `<p><strong>User Type Analysis:</strong><br>`;
+                html += `Original: "${userType}"<br>`;
+                html += `Normalized: "${normalizedType}"<br>`;
+                html += `Is Admin: ${normalizedType === 'admin' ? '✅ Yes' : '❌ No'}<br>`;
+                html += `Dashboard Route: ${normalizedType === 'admin' ? 'AdminDashboard' : 'Other'}</p>`;
+                
+                statusDiv.innerHTML = html;
+                
+                log(`User type check: "${userType}" -> "${normalizedType}"`);
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">❌ Error parsing user data: ${error.message}</p>`;
+                log(`User type check error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run checks on page load
+        window.onload = function() {
+            log('Debug tool loaded. Click buttons to run tests.');
+            checkAuth();
+            checkUserType();
+        };
+    </script>
+</body>
+</html>

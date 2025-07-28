@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { ChatBubble } from "@/components/ChatBubble";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Service {
   id: string;
@@ -48,6 +49,15 @@ interface ServiceDetail {
 }
 
 const HealthcareLanding: React.FC = () => {
+  const { user } = useAuth();
+
+  const handleDashboardRedirect = () => {
+    if (user) {
+      window.location.href = "/dashboard";
+    } else {
+      window.location.href = "/auth";
+    }
+  };
   const services: Service[] = [
     {
       id: "appointments",
@@ -253,12 +263,12 @@ const HealthcareLanding: React.FC = () => {
                 efficiency.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center lg:justify-start">
-                <a
-                  href="/appointments"
+                <button
+                  onClick={handleDashboardRedirect}
                   className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition-colors inline-block text-center font-medium"
                 >
-                  Book An Appointment
-                </a>
+                  {user ? "View Dashboard" : "Get Started"}
+                </button>
                 <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
                   Contact Us
                 </button>

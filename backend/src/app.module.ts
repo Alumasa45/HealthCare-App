@@ -29,6 +29,10 @@ import { SendersModule } from './senders/senders.module';
 import { MessagesModule } from './messages/messages.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { BlogsModule } from './blogs/blogs.module';
+import { PaymentModule } from './payment/payment.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/auth.guard';
+import { DebugModule } from './debug/debug.module';
 
 @Module({
   imports: [
@@ -58,17 +62,14 @@ import { BlogsModule } from './blogs/blogs.module';
     BillingModule,
     NotificationsModule,
     DatabaseModule,
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '1h' },
-    }),
     AuthModule,
     ConversationsModule,
     SendersModule,
     MessagesModule,
     ChatbotModule,
     BlogsModule,
+    PaymentModule,
+    DebugModule,
   ],
   // TypeOrmModule.forRoot({
   //   type: 'postgres',
@@ -83,6 +84,11 @@ import { BlogsModule } from './blogs/blogs.module';
   // }),
 
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}

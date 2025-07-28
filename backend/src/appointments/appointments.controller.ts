@@ -40,6 +40,18 @@ export class AppointmentsController {
     return this.appointmentsService.findByDoctorId(+doctorId);
   }
 
+  @Get('patient/:patientId')
+  @ApiOperation({ summary: 'Returns appointments for a specific patient.' })
+  findByPatientId(@Param('patientId') patientId: string) {
+    return this.appointmentsService.findByPatientId(+patientId);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Returns appointments for a specific user.' })
+  findByUserId(@Param('userId') userId: string) {
+    return this.appointmentsService.findByUserId(+userId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Returns one appointment by Id.' })
   findOne(@Param('id') Slot_id: string) {

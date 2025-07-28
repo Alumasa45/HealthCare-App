@@ -24,6 +24,17 @@ export const medicineOrderApi = {
     }
   },
 
+  findByPharmacy: async (pharmacyId: number): Promise<MedicineOrder[]> => {
+    try {
+      const response = await apiClient.get(
+        `/medicine-orders/pharmacy/${pharmacyId}`
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
   findOne: async (orderId: string): Promise<MedicineOrder | null> => {
     try {
       const response = await apiClient.get(`/medicine-orders/${orderId}`);
@@ -36,7 +47,7 @@ export const medicineOrderApi = {
   findByPatient: async (patientId: number): Promise<MedicineOrder[]> => {
     try {
       const response = await apiClient.get(
-        `/medicine-orders?patientId=${patientId}`
+        `/medicine-orders/patient/${patientId}`
       );
       return response.data;
     } catch (error) {

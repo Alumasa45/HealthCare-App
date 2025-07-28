@@ -15,7 +15,8 @@ export function CocoAssistant() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "👋 Welcome! I'm Coco, your AI assistant.",
+      content:
+        "👋 Welcome to NineHertz Healthcare System! I'm Coco, your AI assistant. I can help you book appointments, find information about our doctors and services, and answer your healthcare questions.",
     },
   ]);
 
@@ -34,11 +35,11 @@ export function CocoAssistant() {
   function getWelcomeMessage(role: string) {
     switch (role) {
       case "doctor":
-        return "👋 Hello, I'm Coco, your AI assistant at NineHertz. I'm here to support you with diagnoses, test suggestions, and treatment planning.";
+        return "👋 Hello Doctor! I'm Coco, your AI assistant at NineHertz Healthcare System. I'm here to support you with clinical decisions, patient information, and our hospital's medical services.";
       case "pharmacy":
-        return "👋 Hello, I'm Coco, here to help you suggest medications, dosages, and verify drug interactions.";
+        return "👋 Hello! I'm Coco, here to help you with our hospital pharmacy services, medication information, dosages, and drug interactions within our system.";
       default:
-        return "👋 Hello, I'm Coco, your AI assistant here at NineHertz. I'm here to support you with health advice, understanding procedures, and more.";
+        return "👋 Hello! I'm Coco, your AI assistant for NineHertz Healthcare System. I can help you book appointments with our doctors, learn about our services, and answer your healthcare questions. How can I assist you today?";
     }
   }
 
@@ -48,7 +49,7 @@ export function CocoAssistant() {
     const userMessage = { role: "user", content: prompt };
     const thinkingMessage = {
       role: "assistant",
-      content: "🤖 Coco is thinking...",
+      content: "👩🏽‍🦱 Coco is thinking...",
     };
 
     setMessages((prev) => [...prev, userMessage, thinkingMessage]);
@@ -64,7 +65,7 @@ export function CocoAssistant() {
       setMessages((prev) => {
         // Remove the "thinking..." message
         const withoutThinking = prev.filter(
-          (msg) => msg.content !== "🤖 Coco is thinking..."
+          (msg) => msg.content !== "👩🏽‍🦱 Coco is thinking..."
         );
         return [
           ...withoutThinking,
@@ -78,7 +79,7 @@ export function CocoAssistant() {
       setMessages((prev) => {
         // Remove the "thinking..." message
         const withoutThinking = prev.filter(
-          (msg) => msg.content !== "🤖 Coco is thinking..."
+          (msg) => msg.content !== "👩🏽‍🦱 Coco is thinking..."
         );
         return [
           ...withoutThinking,

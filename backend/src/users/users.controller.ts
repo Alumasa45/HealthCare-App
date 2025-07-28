@@ -11,23 +11,26 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { User_Type } from './entities/user.entity';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Public()
   @ApiOperation({ summary: 'User registration.' })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Post('login')
+  @Public()
   @ApiOperation({ summary: 'User login.' })
   async login(@Body() body: { Email: string; Password: string }) {
     return this.usersService.login(body.Email, body.Password);
@@ -35,6 +38,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all users.' })
   findAll() {
     return this.usersService.findAll();

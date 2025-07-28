@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; }
+        textarea { width: 100%; height: 100px; }
+    </style>
+</head>
+<body>
+    <h1>Healthcare Backend Auth Debug</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Test Server Connection</h3>
+        <button onclick="testServer()">Test Server</button>
+        <div id="server-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: Get Fresh Token</h3>
+        <button onclick="login()">Login & Get Token</button>
+        <div id="login-result"></div>
+        <textarea id="token-display" placeholder="Fresh token will appear here..."></textarea>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 3: Test with Fresh Token</h3>
+        <button onclick="testWithToken()">Test Users Endpoint</button>
+        <div id="users-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 4: Test Authorization Header</h3>
+        <button onclick="testAuthHeader()">Test Auth Headers</button>
+        <div id="header-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        let currentToken = '';
+
+        function log(message, type = 'info') {
+            console.log(message);
+        }
+
+        async function testServer() {
+            const result = document.getElementById('server-result');
+            result.innerHTML = '<span class="info">Testing server connection...</span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/debug/public`);
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `<span class="success">✅ Server is running! Response: ${JSON.stringify(data)}</span>`;
+                } else {
+                    result.innerHTML = `<span class="error">❌ Server responded with ${response.status}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Cannot connect to server: ${error.message}</span>`;
+            }
+        }
+
+        async function login() {
+            const result = document.getElementById('login-result');
+            const tokenDisplay = document.getElementById('token-display');
+            result.innerHTML = '<span class="info">Logging in...</span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Email: 'auth@gmail.com',
+                        Password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.accessToken;
+                    tokenDisplay.value = currentToken;
+                    result.innerHTML = `<span class="success">✅ Login successful!</span>`;
+                } else {
+                    const errorText = await response.text();
+                    result.innerHTML = `<span class="error">❌ Login failed: ${response.status} - ${errorText}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Login error: ${error.message}</span>`;
+            }
+        }
+
+        async function testWithToken() {
+            const result = document.getElementById('users-result');
+            const token = document.getElementById('token-display').value || currentToken;
+            
+            if (!token) {
+                result.innerHTML = '<span class="error">❌ No token available. Please login first.</span>';
+                return;
+            }
+
+            result.innerHTML = '<span class="info">Testing /users endpoint...</span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `<span class="success">✅ Users endpoint works! Found ${data.length} users</span>`;
+                } else {
+                    const errorText = await response.text();
+                    result.innerHTML = `<span class="error">❌ Users endpoint failed: ${response.status} - ${errorText}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Request error: ${error.message}</span>`;
+            }
+        }
+
+        async function testAuthHeader() {
+            const result = document.getElementById('header-result');
+            const token = document.getElementById('token-display').value || currentToken;
+            
+            if (!token) {
+                result.innerHTML = '<span class="error">❌ No token available. Please login first.</span>';
+                return;
+            }
+
+            result.innerHTML = '<span class="info">Testing debug auth endpoint...</span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/debug/auth-test`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `<span class="success">✅ Auth test passed! User: ${JSON.stringify(data.user)}</span>`;
+                } else {
+                    const errorText = await response.text();
+                    result.innerHTML = `<span class="error">❌ Auth test failed: ${response.status} - ${errorText}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Request error: ${error.message}</span>`;
+            }
+        }
+
+        // Auto-test server connection on load
+        window.onload = () => {
+            testServer();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Step 1: Login to get a fresh access token
+POST http://localhost:3001/auth
+Content-Type: application/json
+
+{
+  "Email": "auth@gmail.com",
+  "Password": "admin123"
+}
+
+###
+
+# Step 2: Test the users endpoint with the new token (replace TOKEN_HERE with actual token from step 1)
+GET http://localhost:3001/users
+Authorization: Bearer TOKEN_HERE
+
+###
+
+# Step 3: Debug - Test if the server is running
+GET http://localhost:3001/debug/public
+
+###
+
+# Step 4: Debug - Test protected endpoint
+GET http://localhost:3001/debug/auth-test
+Authorization: Bearer TOKEN_HERE

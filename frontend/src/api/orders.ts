@@ -21,6 +21,17 @@ export const orderApi = {
     }
   },
 
+  findByPatient: async (Patient_id: number): Promise<Order[]> => {
+    try {
+      const response = await apiClient.get(
+        `/medicine-orders/patient/${Patient_id}`
+      );
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
   findOne: async (Order_id: string): Promise<Order | null> => {
     try {
       const response = await apiClient.get(`/medicine-orders/${Order_id}`);

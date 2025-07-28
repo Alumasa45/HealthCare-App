@@ -36,10 +36,10 @@ export class CreateDoctorDto {
 
   @ApiProperty({ description: 'Doctor date of birth.' })
   @IsString()
-  Date_of_Birth: string;
+  Date_of_Birth?: string;
 
   @ApiProperty({ description: 'Doctor gender.' })
-  Gender: Gender;
+  Gender?: Gender;
 
   // Doctor-specific fields
   @ApiProperty({ description: 'Doctor license number.' })
@@ -48,47 +48,39 @@ export class CreateDoctorDto {
   License_number: string;
 
   @ApiProperty({ description: 'Doctor Specialization.' })
-  @IsNotEmpty()
   @IsString()
-  Specialization: string;
+  Specialization?: string;
 
   @ApiProperty({ description: 'Doctor qualification.' })
-  @IsNotEmpty()
   @IsString()
-  Qualification: string;
+  Qualification?: string;
 
   @ApiProperty({ description: 'Doctor experience years.' })
-  @IsNotEmpty()
   @IsNumber()
-  Experience_Years: number;
+  Experience_Years?: number;
 
   @ApiProperty({ description: 'Doctor department.' })
   @IsString()
-  @IsNotEmpty()
-  Department: string;
+  Department?: string;
 
   @ApiProperty({ description: 'Doctors about.' })
   @IsString()
-  @IsNotEmpty()
-  Bio: string;
+  Bio?: string;
 
   @ApiProperty({ description: 'Languages spoken by the doctor.' })
-  @IsNotEmpty()
   @IsString()
-  Languages_Spoken: string;
+  Languages_Spoken?: string;
 
   @ApiProperty({ description: 'Doctor availability online.' })
-  @IsNotEmpty()
   @IsBoolean()
-  Is_Available_Online: boolean;
+  Is_Available_Online?: boolean;
 
   @ApiProperty({ description: 'Doctor rating.' })
   @IsNumber()
-  Rating: number;
+  Rating?: number;
 
   @ApiProperty({ description: 'Doctor total reviews.' })
-  @IsNotEmpty()
-  Reviews: string;
+  Reviews?: string;
 
   @ApiProperty({ description: 'Date the doctor account was created.' })
   Created_at?: Date;

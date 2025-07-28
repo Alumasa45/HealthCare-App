@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import type { JSX } from "react";
 import {
   Calendar,
   Clock,
@@ -14,20 +15,25 @@ import {
 import type { Appointment } from "@/api/interfaces/appointment";
 import type { PrescriptionInfo } from "@/api/interfaces/prescription";
 import type { DoctorInfo } from "@/api/interfaces/doctor";
-import type { Order, OrderInfo } from "@/api/interfaces/Order";
+import type { Order } from "@/api/interfaces/Order";
+import type { MedicineOrder } from "@/api/interfaces/orders";
 import type { Bill } from "@/api/interfaces/billing";
 import { appointmentApi } from "@/api/appointments";
 import { prescriptionapi } from "@/api/prescriptions";
 import { doctorApi } from "@/api/doctors";
 import { useNavigate } from "@tanstack/react-router";
 import { orderApi } from "@/api/orders";
+import { medicineOrderApi } from "@/api/medicineOrders";
 import { billingApi } from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSessionBilling } from "@/hooks/useSessionBilling";
 import { patientApi } from "@/api/patients";
 import { PharmacySelectionModal } from "@/components/PharmacySelectionModal";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { SessionBillingNotice } from "@/components/SessionBillingNotice";
+import PayWithPaystack from "@/components/Payment";
 
 type TabType =
   | "appointments"
@@ -36,28 +42,53 @@ type TabType =
   | "orders"
   | "billing";
 
-const PatientDashboard: React.FC = () => {
+const PatientDashboard = (): JSX.Element => {
+  // Ensure no code path exits without returning JSX
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { sessionItems, calculateTotals, clearSession, hasItems } =
+    useSessionBilling();
   const [activeTab, setActiveTab] = useState<TabType>("appointments");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [prescriptions, setPrescriptions] = useState<PrescriptionInfo[]>([]);
   const [doctors, setDoctors] = useState<DoctorInfo[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<MedicineOrder[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPatient, setCurrentPatient] = useState<any>(null);
   const [showPharmacyModal, setShowPharmacyModal] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [selectedPrescription, setSelectedPrescription] =
     useState<PrescriptionInfo | null>(null);
+
+  // Check URL parameters for tab on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get("tab") as TabType;
+    if (
+      tabParam &&
+      [
+        "appointments",
+        "prescriptions",
+        "doctors",
+        "orders",
+        "billing",
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam);
+    }
+  }, []);
 
   // Get current patient data
   useEffect(() => {
     const fetchCurrentPatient = async () => {
       if (user?.User_id && user.User_Type === "Patient") {
         try {
+          console.log("Fetching patient data for User_id:", user.User_id);
           const patientData = await patientApi.getByUserId(user.User_id);
+          console.log("Patient data retrieved:", patientData);
+          console.log("Patient_id from patientData:", patientData?.Patient_id);
           setCurrentPatient(patientData);
         } catch (error) {
           console.error("Error fetching current patient:", error);
@@ -67,13 +98,25 @@ const PatientDashboard: React.FC = () => {
     fetchCurrentPatient();
   }, [user]);
 
-  // Fetch appointments data from API.
   useEffect(() => {
     const fetchAppointments = async () => {
+      if (!currentPatient?.Patient_id && !user?.User_id) return;
+
       try {
         setLoading(true);
         setError(null);
-        const data = await appointmentApi.getAll();
+
+        let data: Appointment[] = [];
+
+        // Try to get appointments by Patient_id first (preferred)
+        if (currentPatient?.Patient_id) {
+          data = await appointmentApi.getByPatientId(currentPatient.Patient_id);
+        }
+        // Fallback to User_id if no Patient_id
+        else if (user?.User_id) {
+          data = await appointmentApi.getByUserId(user.User_id);
+        }
+
         // Ensure data is always an array
         if (Array.isArray(data)) {
           setAppointments(data);
@@ -94,7 +137,7 @@ const PatientDashboard: React.FC = () => {
     };
 
     fetchAppointments();
-  }, []);
+  }, [currentPatient, user]);
 
   //fetch prescriptions data from Api - Filter by current patient
   useEffect(() => {
@@ -161,10 +204,15 @@ const PatientDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!currentPatient?.Patient_id) return;
+
       try {
         setLoading(true);
         setError(null);
-        const orderData: OrderInfo[] = await orderApi.findAll();
+        // Use medicineOrderApi which has the correct structure
+        const orderData = await medicineOrderApi.findByPatient(
+          currentPatient.Patient_id
+        );
         // Ensure data is always an array
         if (Array.isArray(orderData)) {
           setOrders(orderData);
@@ -184,14 +232,41 @@ const PatientDashboard: React.FC = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [currentPatient]);
+
+  // Refresh orders when orders tab is selected
+  useEffect(() => {
+    const refreshOrdersOnTabSelect = async () => {
+      if (activeTab === "orders" && currentPatient?.Patient_id) {
+        try {
+          console.log(
+            "Refreshing orders for Patient_id:",
+            currentPatient.Patient_id
+          );
+          const orderData = await medicineOrderApi.findByPatient(
+            currentPatient.Patient_id
+          );
+          console.log("Orders fetched:", orderData);
+          if (Array.isArray(orderData)) {
+            setOrders(orderData);
+            console.log("Orders refreshed:", orderData);
+          }
+        } catch (error) {
+          console.error("Error refreshing orders:", error);
+        }
+      }
+    };
+    refreshOrdersOnTabSelect();
+  }, [activeTab, currentPatient]);
 
   useEffect(() => {
     const fetchBills = async () => {
+      if (!currentPatient?.Patient_id) return;
+
       try {
         setLoading(true);
         setError(null);
-        const billData = await billingApi.findAll();
+        const billData = await billingApi.findAll(currentPatient.Patient_id);
         // Ensure data is always an array
         if (Array.isArray(billData)) {
           setBills(billData);
@@ -211,7 +286,7 @@ const PatientDashboard: React.FC = () => {
       }
     };
     fetchBills();
-  }, []);
+  }, [currentPatient]);
 
   const formatDate = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -643,6 +718,29 @@ const PatientDashboard: React.FC = () => {
   };
 
   const renderOrders = () => {
+    const refreshOrders = async () => {
+      if (currentPatient?.Patient_id) {
+        try {
+          setLoading(true);
+          console.log(
+            "Manually refreshing orders for Patient_id:",
+            currentPatient.Patient_id
+          );
+          const orderData = await medicineOrderApi.findByPatient(
+            currentPatient.Patient_id
+          );
+          console.log("Manual refresh - Orders fetched:", orderData);
+          if (Array.isArray(orderData)) {
+            setOrders(orderData);
+          }
+        } catch (error) {
+          console.error("Error manually refreshing orders:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
     if (loading) {
       return (
         <div className="flex justify-center items-center h-64">
@@ -671,6 +769,13 @@ const PatientDashboard: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             My Orders ({orders?.length || 0})
           </h2>
+          <Button
+            onClick={refreshOrders}
+            variant="outline"
+            className="text-purple-600 hover:text-purple-700"
+          >
+            Refresh Orders
+          </Button>
         </div>
 
         {!orders || !Array.isArray(orders) || orders.length === 0 ? (
@@ -692,14 +797,56 @@ const PatientDashboard: React.FC = () => {
                         <span className="font-medium text-gray-700 dark:text-gray-300">
                           Total Amount:
                         </span>{" "}
-                        {order.Total_Amount}
+                        KES {order.Total_Amount.toLocaleString()}
                       </div>
                       <div>
                         <span className="font-medium text-gray-700 dark:text-gray-300">
                           Status:
                         </span>{" "}
-                        {order.Order_Status}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            order.Order_Status === "Delivered"
+                              ? "bg-green-100 text-green-800"
+                              : order.Order_Status === "Processing"
+                              ? "bg-blue-100 text-blue-800"
+                              : order.Order_Status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {order.Order_Status}
+                        </span>
                       </div>
+                      <div>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          Payment Status:
+                        </span>{" "}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            order.Payment_Status === "Paid"
+                              ? "bg-green-100 text-green-800"
+                              : order.Payment_Status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {order.Payment_Status}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          Order Date:
+                        </span>{" "}
+                        {new Date(order.Order_Date).toLocaleDateString()}
+                      </div>
+                      {order.Delivery_Address && (
+                        <div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                            Delivery Address:
+                          </span>{" "}
+                          {order.Delivery_Address}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -769,125 +916,203 @@ const PatientDashboard: React.FC = () => {
       }
     };
 
+    const sessionBilling = calculateTotals();
+    const hasSessionItems = hasItems();
+
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            My Bills ({bills?.length || 0})
+            Billing & Payments
           </h2>
         </div>
 
-        {!bills || !Array.isArray(bills) || bills.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No bills found.</div>
-        ) : (
-          <div className="grid gap-4">
-            {bills.map((bill) => (
-              <div
-                key={bill.Bill_id}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                        Bill #{bill.Bill_id}
-                      </h3>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          bill.Payment_Status === "Paid"
-                            ? "bg-green-100 text-green-800"
-                            : bill.Payment_Status === "Pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : bill.Payment_Status === "Overdue"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {bill.Payment_Status === "Paid" && (
-                          <CheckCircle className="inline-block w-4 h-4 mr-1" />
-                        )}
-                        {bill.Payment_Status === "Pending" && (
-                          <Clock className="inline-block w-4 h-4 mr-1" />
-                        )}
-                        {bill.Payment_Status === "Overdue" && (
-                          <AlertCircle className="inline-block w-4 h-4 mr-1" />
-                        )}
-                        {bill.Payment_Status}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Description:
-                        </span>{" "}
-                        {bill.Description}
+        {/* Current Session Bill */}
+        {hasSessionItems && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-blue-900 mb-3">
+              Current Session Bill
+            </h3>
+            <div className="space-y-2">
+              {sessionItems.map((item, index) => (
+                <div key={index} className="flex justify-between text-sm">
+                  <span>{item.description}</span>
+                  <span className="font-medium">KES {item.amount}</span>
+                </div>
+              ))}
+              <div className="border-t pt-2 mt-2">
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total:</span>
+                  <span className="text-blue-600">
+                    KES {sessionBilling.totalAmount || 0}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  onClick={() => setShowPayment(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Pay Now - KES {sessionBilling.totalAmount || 0}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={clearSession}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Clear Session
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Component */}
+        {showPayment && hasSessionItems && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-green-900 mb-3">
+              Complete Payment
+            </h3>
+            <p className="text-green-700 mb-4">
+              You are about to pay KES {sessionBilling.totalAmount || 0} for
+              your healthcare session.
+            </p>
+            <div className="flex gap-2">
+              <PayWithPaystack
+                email={user?.Email || ""}
+                amount={sessionBilling.totalAmount || 0}
+                onSuccess={() => {
+                  toast.success("Payment completed successfully!");
+                  clearSession();
+                  setShowPayment(false);
+                }}
+              />
+              <Button variant="outline" onClick={() => setShowPayment(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Historical Bills */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-3">
+            Previous Bills ({bills?.length || 0})
+          </h3>
+          {!bills || !Array.isArray(bills) || bills.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No previous bills found.
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {bills.map((bill) => (
+                <div
+                  key={bill.Bill_id}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                          Bill #{bill.Bill_id}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            bill.Payment_Status === "Paid"
+                              ? "bg-green-100 text-green-800"
+                              : bill.Payment_Status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : bill.Payment_Status === "Overdue"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {bill.Payment_Status === "Paid" && (
+                            <CheckCircle className="inline-block w-4 h-4 mr-1" />
+                          )}
+                          {bill.Payment_Status === "Pending" && (
+                            <Clock className="inline-block w-4 h-4 mr-1" />
+                          )}
+                          {bill.Payment_Status === "Overdue" && (
+                            <AlertCircle className="inline-block w-4 h-4 mr-1" />
+                          )}
+                          {bill.Payment_Status}
+                        </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-4">
+                      <div className="space-y-2 text-sm">
                         <div>
                           <span className="font-medium text-gray-700 dark:text-gray-300">
-                            Bill Date:
+                            Description:
                           </span>{" "}
-                          {formatDate(bill.Bill_Date)}
+                          {bill.Description}
                         </div>
-                        <div>
-                          <span className="font-medium text-gray-700 dark:text-gray-300">
-                            Due Date:
-                          </span>{" "}
-                          {formatDate(bill.Due_Date)}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div>
-                          <span className="font-medium text-gray-700 dark:text-gray-300">
-                            Amount:
-                          </span>{" "}
-                          ${bill.Amount.toFixed(2)}
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700 dark:text-gray-300">
-                            Tax:
-                          </span>{" "}
-                          ${bill.Tax_Amount.toFixed(2)}
-                        </div>
-                        {bill.Discount_Amount > 0 && (
+                        <div className="flex flex-wrap items-center gap-4">
                           <div>
                             <span className="font-medium text-gray-700 dark:text-gray-300">
-                              Discount:
+                              Bill Date:
                             </span>{" "}
-                            -${bill.Discount_Amount.toFixed(2)}
+                            {formatDate(bill.Bill_Date)}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              Due Date:
+                            </span>{" "}
+                            {formatDate(bill.Due_Date)}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4">
+                          <div>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              Amount:
+                            </span>{" "}
+                            ${bill.Amount.toFixed(2)}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              Tax:
+                            </span>{" "}
+                            ${bill.Tax_Amount.toFixed(2)}
+                          </div>
+                          {bill.Discount_Amount > 0 && (
+                            <div>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">
+                                Discount:
+                              </span>{" "}
+                              -${bill.Discount_Amount.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                          <span className="font-medium text-lg text-gray-900 dark:text-gray-100">
+                            Total: ${bill.Total_Amount.toFixed(2)}
+                          </span>
+                        </div>
+                        {bill.Payment_Status === "Paid" && (
+                          <div className="mt-2 text-green-600 dark:text-green-400">
+                            <CheckCircle className="inline-block w-4 h-4 mr-1" />
+                            Paid on {formatDate(bill.Payment_Date || "")} via{" "}
+                            {bill.Payment_Method}
                           </div>
                         )}
                       </div>
-                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <span className="font-medium text-lg text-gray-900 dark:text-gray-100">
-                          Total: ${bill.Total_Amount.toFixed(2)}
-                        </span>
-                      </div>
-                      {bill.Payment_Status === "Paid" && (
-                        <div className="mt-2 text-green-600 dark:text-green-400">
-                          <CheckCircle className="inline-block w-4 h-4 mr-1" />
-                          Paid on {formatDate(bill.Payment_Date || "")} via{" "}
-                          {bill.Payment_Method}
-                        </div>
-                      )}
                     </div>
                   </div>
+                  {(bill.Payment_Status === "Pending" ||
+                    bill.Payment_Status === "Overdue") && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => handlePayBill(bill.Bill_id || 0)}
+                        className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                      >
+                        Pay Now <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                {(bill.Payment_Status === "Pending" ||
-                  bill.Payment_Status === "Overdue") && (
-                  <div className="mt-4">
-                    <Button
-                      onClick={() => handlePayBill(bill.Bill_id || 0)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                    >
-                      Pay Now <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -911,6 +1136,9 @@ const PatientDashboard: React.FC = () => {
 
   return (
     <div>
+      {/* Session Billing Notice */}
+      <SessionBillingNotice />
+
       {/* Header with Navigation and Notifications */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">

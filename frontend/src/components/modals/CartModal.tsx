@@ -1,20 +1,19 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSessionBilling } from "@/hooks/useSessionBilling";
 import { medicineOrderApi } from "@/api/medicineOrders";
+import { patientApi } from "@/api/patients";
 import type { CreateMedicineOrderDto } from "@/api/interfaces/orders";
 import { toast } from "sonner";
 import { X, ShoppingCart, Trash2, Plus, Minus, CreditCard } from "lucide-react";
+import { DialogTitle } from "../ui/dialog";
+import { useRouter } from "@tanstack/react-router";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -24,6 +23,8 @@ interface CartModalProps {
 export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
+  const { addSessionItem } = useSessionBilling();
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
@@ -60,6 +61,17 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
     setIsProcessing(true);
 
     try {
+      // First, get the patient data to get the correct Patient_id
+      console.log("Looking up patient for user ID:", user.User_id);
+      const patientData = await patientApi.getByUserId(user.User_id);
+      if (!patientData?.Patient_id) {
+        throw new Error(
+          "Unable to find patient information. Please complete your patient profile first."
+        );
+      }
+
+      console.log("Patient data found:", patientData);
+
       const itemsByPharmacy = cart.items.reduce((acc, item) => {
         const pharmacyId = item.inventory.Pharmacy_id;
         if (!acc[pharmacyId]) {
@@ -69,6 +81,28 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
         return acc;
       }, {} as Record<number, typeof cart.items>);
 
+      // Add all cart items to session billing FIRST, before creating orders
+      console.log("Adding all items to session billing...");
+      Object.entries(itemsByPharmacy).forEach(([pharmacyId, items]) => {
+        const totalAmount = items.reduce(
+          (sum, item) => sum + item.totalPrice,
+          0
+        );
+
+        console.log("Adding session item with amount:", totalAmount);
+        addSessionItem({
+          type: "medicine_order",
+          id: Date.now() + Math.random(),
+          description: `Medicine Order from Pharmacy ${pharmacyId}`,
+          amount: totalAmount,
+          details: {
+            pharmacy_id: parseInt(pharmacyId),
+            order_date: new Date().toISOString(),
+            item_count: items.length,
+          },
+        });
+      });
+
       const orderPromises = Object.entries(itemsByPharmacy).map(
         async ([pharmacyId, items]) => {
           const totalAmount = items.reduce(
@@ -77,23 +111,27 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
           );
 
           const orderData: CreateMedicineOrderDto = {
-            Patient_id: user.User_id,
+            Patient_id: patientData.Patient_id!, // Use the correct Patient_id (non-null assertion since we checked above)
             Pharmacy_id: parseInt(pharmacyId),
-            Total_Amount: totalAmount,
+            Total_Amount: Number(totalAmount),
             Order_Status: "Pending",
             Payment_Status: "Pending",
             Payment_Method: paymentMethod,
             Delivery_Address: deliveryAddress,
             Notes: notes,
             orderItems: items.map((item) => ({
-              Medicine_id: item.inventory.Medicine_id,
-              Quantity: item.quantity,
-              Unit_Price: item.inventory.Unit_Price,
-              Total_Price: item.totalPrice,
+              Medicine_id: Number(item.inventory.Medicine_id),
+              Quantity: Number(item.quantity),
+              Unit_Price: Number(item.inventory.Unit_Price),
+              Total_Price: Number(item.totalPrice),
             })),
           };
 
-          return medicineOrderApi.create(orderData);
+          console.log("Sending order data:", orderData);
+          const order = await medicineOrderApi.create(orderData);
+          console.log("Order created successfully:", order);
+
+          return order;
         }
       );
 
@@ -107,16 +145,48 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
       setShowCheckout(false);
       setDeliveryAddress("");
       setNotes("");
-    } catch (error) {
+
+      router.navigate({ to: "/billing", search: { tab: "billing" } });
+    } catch (error: any) {
       console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
+
+      let errorMessage = "Unknown error";
+
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+
+        // Handle specific error cases
+        if (
+          error.response.status === 404 ||
+          (error.response.data &&
+            error.response.data.code === "PATIENT_NOT_FOUND")
+        ) {
+          errorMessage =
+            "Please complete your patient profile before placing orders. Go to Profile → Patient Information.";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = `Server error (${error.response.status})`;
+        }
+      } else if (error.request) {
+        console.error("Request:", error.request);
+        errorMessage =
+          "Unable to connect to server. Please check your internet connection.";
+      } else {
+        console.error("Error message:", error.message);
+        errorMessage = error.message;
+      }
+
+      toast.error(`Failed to place order: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const formatPrice = (price: number) => {
-    return `KES ${price.toFixed(2)}`;
+    return `KES ${price}`;
   };
 
   if (showCheckout) {

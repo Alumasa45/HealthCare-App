@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppointmentsService } from 'src/appointments/appointments.service';
+import { DoctorsService } from 'src/doctors/doctors.service';
+import { PatientsService } from 'src/patients/patients.service';
 import { Together } from 'together-ai';
 
 @Injectable()
@@ -8,7 +10,11 @@ export class ChatbotService {
     apiKey: process.env.TOGETHER_API_KEY,
   });
 
-  constructor(private readonly appointmentService: AppointmentsService) {}
+  constructor(
+    private readonly appointmentService: AppointmentsService,
+    private readonly doctorsService: DoctorsService,
+    private readonly patientsService: PatientsService,
+  ) {}
 
   async askCoco(
     prompt: string,
@@ -29,11 +35,27 @@ export class ChatbotService {
       'shikamoo',
     ];
     if (greetings.some((g) => cleanedPrompt.startsWith(g))) {
-      return "Hello! I'm Coco, your hospital AI assistant. I can respond in English, French, or Kiswahili. How can I help you today?";
+      return "Hello! I'm Coco, your AI assistant for NineHertz Healthcare System. I can help you book appointments with our doctors, find information about our services, and answer health-related questions in English, French, or Kiswahili. How can I help you today?";
     }
 
     const allowedKeywords = [
-      // English
+      // English - NineHertz Healthcare System specific
+      'ninehertz',
+      'our hospital',
+      'this hospital',
+      'book appointment',
+      'schedule appointment',
+      'available doctors',
+      'doctors here',
+      'services here',
+      'consultation fee',
+      'hospital hours',
+      'opening hours',
+      'medical records',
+      'prescription',
+      'pharmacy services',
+
+      // General medical terms
       'hospital',
       'clinic',
       'pharmacy',
@@ -89,9 +111,14 @@ export class ChatbotService {
       'sick',
       'ill',
       'clinic visit',
-      'appointment',
-      'book appointment',
-      'schedule',
+      'visit',
+      'reservation',
+      'malaria',
+      'hypertension',
+      'diabetes',
+      'health tips',
+      'advice',
+      'preventive care',
       'visit',
       'reservation',
       'malaria',
@@ -247,36 +274,58 @@ export class ChatbotService {
       return null;
     }
 
+    // Handle appointment booking requests
     if (
-      cleanedPrompt.includes('book') &&
-      cleanedPrompt.includes('appointment')
+      (cleanedPrompt.includes('book') &&
+        cleanedPrompt.includes('appointment')) ||
+      (cleanedPrompt.includes('schedule') &&
+        cleanedPrompt.includes('appointment')) ||
+      cleanedPrompt.includes('make appointment') ||
+      cleanedPrompt.includes('see doctor') ||
+      cleanedPrompt.includes('visit doctor')
     ) {
-      const date = extractDateFromPrompt(cleanedPrompt);
+      return await this.handleAppointmentBookingRequest(cleanedPrompt);
+    }
 
-      const createAppointmentDto = {
-        Appointment_Date: date,
-        Patient_id: 'REPLACE_WITH_PATIENT_ID',
-        Doctor_id: 'REPLACE_WITH_DOCTOR_ID',
-        Appointment_Time: '09:00',
-        Appointment_Type: 'General',
-        Status: 'Scheduled',
-        Reason: 'Routine checkup',
-        Notes: '',
-        Reason_For_Visit: 'Routine checkup',
-        Payment_Status: 'Pending',
-      };
+    // Handle doctor availability requests
+    if (
+      cleanedPrompt.includes('available doctors') ||
+      cleanedPrompt.includes('doctors available') ||
+      cleanedPrompt.includes('find doctor') ||
+      cleanedPrompt.includes('list doctors')
+    ) {
+      return await this.handleDoctorAvailabilityRequest();
+    }
 
-      //const result = await this.appointmentService.create(createAppointmentDto);
-      return `Appointment booked successfully for ${date}. See you then!`;
+    // Handle service information requests
+    if (
+      cleanedPrompt.includes('services') ||
+      cleanedPrompt.includes('what can you do') ||
+      cleanedPrompt.includes('help') ||
+      cleanedPrompt.includes('hospital hours') ||
+      cleanedPrompt.includes('opening hours')
+    ) {
+      return this.getHospitalServicesInfo();
+    }
+
+    // Handle requests for external hospitals (redirect to our system)
+    if (
+      cleanedPrompt.includes('other hospitals') ||
+      cleanedPrompt.includes('nearby hospitals') ||
+      cleanedPrompt.includes('find hospitals') ||
+      cleanedPrompt.includes('recommend hospital') ||
+      cleanedPrompt.includes('best hospital')
+    ) {
+      return "I'm Coco, your AI assistant specifically for NineHertz Healthcare System. I can only help you with our hospital's services, doctors, and appointments. For the best care, I recommend booking an appointment with one of our qualified doctors. Would you like me to show you our available doctors or help you book an appointment?";
     }
 
     if (!isRelevant) {
-      return "I'm only able to assist with hospital, medical, or pharmacy-related topics. Please ask a relevant question (English, French, or Kiswahili supported).";
+      return "I'm Coco, your AI assistant for NineHertz Healthcare System. I can help you with:\n\n• Booking appointments with our doctors\n• Finding available doctors and their specialties\n• Information about our hospital services\n• General health advice and questions\n\nPlease ask me something related to our healthcare services. I support English, French, and Kiswahili.";
     }
 
     const systemPrompt =
       this.buildSystemPrompt(role) +
-      ` Respond in the same language the user asked in. Support English, French, and Kiswahili.`;
+      ` You are specifically helping users with NineHertz Healthcare System services. Do not suggest external hospitals or clinics. Focus on our hospital's services, doctors, and appointment booking. Respond in the same language the user asked in. Support English, French, and Kiswahili.`;
 
     try {
       const response = await this.together.chat.completions.create({
@@ -297,23 +346,129 @@ export class ChatbotService {
     }
   }
 
+  private async handleAppointmentBookingRequest(
+    prompt: string,
+  ): Promise<string> {
+    try {
+      // Get available doctors from your system
+      const doctors = await this.doctorsService.findAll();
+
+      if (!doctors || doctors.length === 0) {
+        return "I'm sorry, but I cannot find any doctors in our system at the moment. Please contact our reception at the front desk for assistance.";
+      }
+
+      // Format doctor list for user
+      const doctorList = doctors
+        .slice(0, 5)
+        .map((doctor, index) => {
+          const name =
+            `Dr. ${doctor.user?.First_Name || ''} ${doctor.user?.Last_Name || ''}`.trim();
+          const specialty = doctor.Specialization || 'General Practice';
+          return `${index + 1}. ${name} - ${specialty}`;
+        })
+        .join('\n');
+
+      return `I'd be happy to help you book an appointment! Here are some of our available doctors:\n\n${doctorList}\n\nTo book an appointment, please:\n1. Visit our appointment booking section on the website\n2. Select your preferred doctor\n3. Choose an available date and time\n4. Complete the booking form\n\nOur hospital is open Monday to Saturday, 8:00 AM to 6:00 PM. Would you like me to provide more information about any specific doctor or service?`;
+    } catch (error) {
+      console.error('Error fetching doctors for appointment booking:', error);
+      return "I'm having trouble accessing our doctor database right now. Please try booking directly through our appointment system or contact our reception for assistance.";
+    }
+  }
+
+  private async handleDoctorAvailabilityRequest(): Promise<string> {
+    try {
+      const doctors = await this.doctorsService.findAll();
+
+      if (!doctors || doctors.length === 0) {
+        return "I'm sorry, but I cannot find any doctors in our system at the moment. Please contact our reception for current doctor availability.";
+      }
+
+      // Group doctors by specialization
+      const doctorsBySpecialty = doctors.reduce(
+        (acc, doctor) => {
+          const specialty = doctor.Specialization || 'General Practice';
+          if (!acc[specialty]) {
+            acc[specialty] = [];
+          }
+          acc[specialty].push(
+            `Dr. ${doctor.user?.First_Name || ''} ${doctor.user?.Last_Name || ''}`.trim(),
+          );
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
+
+      let response =
+        'Here are our available doctors organized by specialty:\n\n';
+
+      Object.entries(doctorsBySpecialty).forEach(([specialty, doctorNames]) => {
+        response += `**${specialty}:**\n`;
+        doctorNames.forEach((name) => {
+          response += `• ${name}\n`;
+        });
+        response += '\n';
+      });
+
+      response +=
+        'To book an appointment with any of these doctors, please use our online appointment booking system. All doctors are available Monday to Saturday, 8:00 AM to 6:00 PM.';
+
+      return response;
+    } catch (error) {
+      console.error('Error fetching doctor availability:', error);
+      return "I'm having trouble accessing our doctor database right now. Please contact our reception for current doctor availability.";
+    }
+  }
+
+  private getHospitalServicesInfo(): string {
+    return `Welcome to NineHertz Healthcare System! Here's what I can help you with:
+
+🏥 **Our Services:**
+• General consultations with qualified doctors
+• Specialist consultations (various specialties available)
+• Medical prescriptions and pharmacy services
+• Patient medical records management
+• Telemedicine consultations
+• In-person and follow-up appointments
+
+🕒 **Hospital Hours:**
+Monday to Saturday: 8:00 AM - 6:00 PM
+Sunday: Closed (Emergency services available)
+
+💻 **How I Can Help:**
+• Book appointments with our doctors
+• Find available doctors and their specialties
+• Provide general health information
+• Answer questions about our services
+• Assist with appointment scheduling
+
+📞 **Need Human Assistance?**
+For complex bookings or urgent matters, please contact our reception desk directly.
+
+What would you like help with today?`;
+  }
+
   private buildSystemPrompt(role: string): string {
+    const basePrompt = `You are Coco, an AI assistant for NineHertz Healthcare System. You help users with our hospital services ONLY - do not suggest external hospitals or browse other healthcare facilities. Our hospital operates Monday to Saturday, 8:00 AM to 6:00 PM.`;
+
     switch (role) {
       case 'doctor':
-        return 'You are Coco, a clinical AI assistant for doctors. Analyze symptoms, patient history, and suggest accurate diagnoses, tests, and treatment plans. Be medically sound, concise, and confident.';
+        return `${basePrompt} You are assisting doctors with clinical tasks. Analyze symptoms, patient history, and suggest accurate diagnoses, tests, and treatment plans within our hospital system. Be medically sound, concise, and confident.`;
       case 'pharmacy':
-        return "You are Coco, the hospital's AI pharmacist. Suggest appropriate medications, dosages, instructions, and safety checks based on diagnoses or symptoms.";
+        return `${basePrompt} You are assisting pharmacists in our hospital pharmacy. Suggest appropriate medications from our inventory, dosages, instructions, and safety checks based on diagnoses or symptoms.`;
       case 'patient':
-        return `You are Coco, a friendly AI health assistant for patients. 
-  Explain symptoms, procedures, medications, and care processes in clear, simple language. 
-  Help users book hospital appointments based on available services and respond to health-related questions in English, French, or Kiswahili.
-  Be caring, helpful, and accurate.`;
+        return `${basePrompt} You are helping patients with our hospital services. Help them:
+        - Book appointments with our doctors
+        - Understand our medical procedures and services
+        - Get information about our hospital departments
+        - Navigate our healthcare system
+        Explain everything in clear, simple language. Be caring, helpful, and accurate. Focus only on NineHertz Healthcare System services.`;
       default:
-        return `You are Coco, a helpful AI assistant... 
-Our hospital is open from 8am to 6pm, Monday to Saturday. 
-You can help patients book appointments with doctors (General, Pediatrics, Dentistry). 
-If the user asks about a disease, respond with a short, clear explanation.
-Speak English, Kiswahili, or French.`;
+        return `${basePrompt} Help users with:
+        - Booking appointments with our doctors
+        - Information about our medical services
+        - Hospital hours and availability
+        - General health guidance
+        Focus exclusively on NineHertz Healthcare System. Do not recommend external facilities.`;
     }
   }
 }

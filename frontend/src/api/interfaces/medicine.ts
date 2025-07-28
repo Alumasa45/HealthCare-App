@@ -1,6 +1,6 @@
 export enum Strength {
-  Very_Strong = 'Very Strong',
-  Average = 'Average',
+  Very_Strong = "Very Strong",
+  Average = "Average",
 }
 
 export interface Medicine {
@@ -14,6 +14,7 @@ export interface Medicine {
   Description: string;
   Side_Effects: string;
   Storage_Instructions: string;
+  Image_url?: string;
   Created_at?: Date | string;
   Updated_at?: Date | string;
 }
@@ -28,4 +29,5 @@ export interface CreateMedicineDto {
   Description: string;
   Side_Effects: string;
   Storage_Instructions: string;
+  Image_url?: string;
 }

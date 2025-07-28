@@ -1,0 +1,79 @@
+/* Custom Purple Glow Effects for Admin Dashboard */
+
+/* Sheet glow effect when opened */
+.sheet-glow {
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.15),
+    0 0 40px rgba(139, 92, 246, 0.1),
+    0 0 80px rgba(139, 92, 246, 0.05);
+  animation: subtle-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes subtle-glow {
+  from {
+    box-shadow: 
+      0 0 20px rgba(139, 92, 246, 0.15),
+      0 0 40px rgba(139, 92, 246, 0.1),
+      0 0 80px rgba(139, 92, 246, 0.05);
+  }
+  to {
+    box-shadow: 
+      0 0 30px rgba(139, 92, 246, 0.25),
+      0 0 60px rgba(139, 92, 246, 0.15),
+      0 0 100px rgba(139, 92, 246, 0.1);
+  }
+}
+
+/* Enhanced hover effects for cards */
+.card-purple-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 10px 25px rgba(139, 92, 246, 0.15),
+    0 0 0 1px rgba(139, 92, 246, 0.1);
+}
+
+/* Purple accent for active navigation tabs */
+.nav-tab-active {
+  position: relative;
+}
+
+.nav-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #a855f7, #8b5cf6);
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+/* Subtle purple background patterns */
+.purple-pattern-bg {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
+}
+
+/* Enhanced button styles */
+.btn-purple-glow {
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-purple-glow:hover {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Sheet content styling */
+.sheet-content {
+  background: linear-gradient(135deg, #fefbff 0%, #f3e8ff 100%);
+}
+
+/* Loading spinner with purple theme */
+.purple-spinner {
+  border-color: rgba(139, 92, 246, 0.2);
+  border-top-color: #8b5cf6;
+}

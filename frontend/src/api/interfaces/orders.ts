@@ -49,10 +49,15 @@ export interface CreateMedicineOrderDto {
   Payment_Status: string;
   Payment_Method?: string;
   Delivery_Address: string;
+  Delivery_Date?: Date | string;
   Notes?: string;
-  orderItems: CreateMedicineOrderItemDto[];
+  orderItems: {
+    Medicine_id: number;
+    Quantity: number;
+    Unit_Price: number;
+    Total_Price: number;
+  }[];
 }
-
 export interface CreateMedicineOrderItemDto {
   Medicine_id: number;
   Quantity: number;

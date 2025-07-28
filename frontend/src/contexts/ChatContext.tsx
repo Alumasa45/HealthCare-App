@@ -1,29 +1,35 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { useAuth } from './AuthContext';
-import { getConversations, createConversation } from '../api/conversations';
-import { getMessages, createMessage, markMessageAsRead } from '../api/messages';
-import { createSender } from '../api/senders';
-import { ConversationType } from '../api/interfaces/conversation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { useAuth } from "./AuthContext";
+import { getConversations, createConversation } from "../api/conversations";
+import { getMessages, createMessage, markMessageAsRead } from "../api/messages";
+import { createSender } from "../api/senders";
+import { ConversationType } from "../api/interfaces/conversation";
 
 interface Message {
   id: string;
   Sender_id: number;
   content: string;
   timestamp: Date;
-  type: 'text' | 'image' | 'file' | 'system';
-  status: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
+  type: "text" | "image" | "file" | "system";
+  status: "sending" | "sent" | "delivered" | "read" | "error";
   attachmentUrl?: string;
   attachmentName?: string;
 }
 
- interface Userr_Type {
-    User_Type: 'Patient' | 'Doctor' | 'Pharmacist' | 'Admin';
+interface Userr_Type {
+  User_Type: "Patient" | "Doctor" | "Pharmacist" | "Admin";
 }
 
 interface User {
   id: string;
   name: string;
-  role: 'patient' | 'doctor' | 'pharmacist';
+  role: "patient" | "doctor" | "pharmacist";
   avatar?: string;
   isOnline: boolean;
   lastSeen?: Date;
@@ -34,7 +40,7 @@ interface Chat {
   participants: User[];
   lastMessage?: Message;
   unreadCount: number;
-  type: 'direct' | 'group';
+  type: "direct" | "group";
   title?: string;
 }
 
@@ -51,7 +57,9 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ChatProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const { user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -65,77 +73,89 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       setLoading(true);
       setError(null);
-      
+
       try {
         const conversations = await getConversations(user.User_id);
         const transformedChats = await Promise.all(
           conversations.map(async (conv) => {
             try {
-              const participantId = conv.sender?.toString() || 'unknown';
+              const participantId = conv.sender?.toString() || "unknown";
               const mockParticipant = {
                 id: participantId,
                 name: conv.Title || `User ${participantId}`,
-                role: 'patient' as 'patient' | 'doctor' | 'pharmacist',
-                isOnline: Math.random() > 0.5, 
+                role: "patient" as "patient" | "doctor" | "pharmacist",
+                isOnline: Math.random() > 0.5,
               };
-              
+
               let lastMessage: Message | undefined;
               let unreadCount = 0;
-              
+
               try {
-                const conversationMessages = await getMessages(conv.Conversation_id);
+                const conversationMessages = await getMessages(
+                  conv.Conversation_id
+                );
                 if (conversationMessages.length > 0) {
-                  const lastMsg = conversationMessages[conversationMessages.length - 1];
+                  const lastMsg =
+                    conversationMessages[conversationMessages.length - 1];
                   lastMessage = {
                     id: lastMsg.Message_id?.toString() || `msg-${Date.now()}`,
-                    Sender_id: lastMsg.Sender_id || '',
-                    content: lastMsg.Content || '',
-                    timestamp: lastMsg.Created_at ? new Date(lastMsg.Created_at) : new Date(),
-                    type: lastMsg.Attachment_Url ? 'file' : 'text',
-                    status: lastMsg.Is_read ? 'read' : 'delivered'
+                    Sender_id: lastMsg.Sender_id || "",
+                    content: lastMsg.Content || "",
+                    timestamp: lastMsg.Created_at
+                      ? new Date(lastMsg.Created_at)
+                      : new Date(),
+                    type: lastMsg.Attachment_Url ? "file" : "text",
+                    status: lastMsg.Is_read ? "read" : "delivered",
                   } as Message;
-                  
-                  unreadCount = conversationMessages.filter(msg => 
-                    !msg.Is_read && msg.Sender_id?.toString() !== user.User_id.toString()
+
+                  unreadCount = conversationMessages.filter(
+                    (msg) =>
+                      !msg.Is_read &&
+                      msg.Sender_id?.toString() !== user.User_id.toString()
                   ).length;
                 }
               } catch (msgError) {
-                console.error('Error fetching messages for conversation:', msgError);
+                console.error(
+                  "Error fetching messages for conversation:",
+                  msgError
+                );
               }
-              
+
               return {
                 id: conv.Conversation_id.toString(),
                 participants: [mockParticipant],
-                type: conv.Type.toLowerCase() as 'direct' | 'group',
+                type: conv.Type.toLowerCase() as "direct" | "group",
                 unreadCount,
                 title: conv.Title,
-                lastMessage
+                lastMessage,
               } as Chat;
             } catch (convError) {
-              console.error('Error processing conversation:', convError);
+              console.error("Error processing conversation:", convError);
               return {
                 id: conv.Conversation_id.toString(),
-                participants: [{
-                  id: 'unknown',
-                  name: 'Unknown User',
-                  role: 'patient' as const,
-                  isOnline: false
-                }],
-                type: 'direct' as const,
+                participants: [
+                  {
+                    id: "unknown",
+                    name: "Unknown User",
+                    role: "patient" as const,
+                    isOnline: false,
+                  },
+                ],
+                type: "direct" as const,
                 unreadCount: 0,
-                title: conv.Title || 'Chat'
+                title: conv.Title || "Chat",
               } as Chat;
             }
           })
         );
-        
+
         setChats(transformedChats);
         if (transformedChats.length > 0 && !selectedChatId) {
           setSelectedChatId(transformedChats[0].id);
         }
       } catch (error) {
-        console.error('Error fetching conversations:', error);
-        setError('Failed to load conversations');
+        console.error("Error fetching conversations:", error);
+        setError("Failed to load conversations");
       } finally {
         setLoading(false);
       }
@@ -146,28 +166,46 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!selectedChatId) return;
+      if (!selectedChatId) {
+        setMessages([]);
+        return;
+      }
 
       setLoading(true);
       setError(null);
-      
+
       try {
+        console.log("🔄 Fetching messages for chat:", selectedChatId);
         const messagesData = await getMessages(parseInt(selectedChatId));
-        const transformedMessages = messagesData.map(msg => ({
-          id: msg.Message_id?.toString() || `msg-${Date.now()}`,
-          Sender_id: msg.Sender_id || '',
-          content: msg.Content || '',
-          timestamp: msg.Created_at ? new Date(msg.Created_at) : new Date(),
-          type: msg.Attachment_Url ? 'file' : 'text',
-          status: msg.Is_read ? 'read' : 'delivered',
-          attachmentUrl: msg.Attachment_Url || undefined,
-          attachmentName: msg.Attachment_Url ? msg.Attachment_Url.split('/').pop() : undefined
-        } as Message));
-        
-        setMessages(transformedMessages);
+        console.log("📨 Fetched messages:", messagesData.length);
+
+        if (messagesData && messagesData.length > 0) {
+          const transformedMessages = messagesData.map(
+            (msg) =>
+              ({
+                id: msg.Message_id?.toString() || `msg-${Date.now()}`,
+                Sender_id: msg.Sender_id || "",
+                content: msg.Content || "",
+                timestamp: msg.Created_at
+                  ? new Date(msg.Created_at)
+                  : new Date(),
+                type: msg.Attachment_Url ? "file" : "text",
+                status: msg.Is_read ? "read" : "delivered",
+                attachmentUrl: msg.Attachment_Url || undefined,
+                attachmentName: msg.Attachment_Url
+                  ? msg.Attachment_Url.split("/").pop()
+                  : undefined,
+              } as Message)
+          );
+
+          setMessages(transformedMessages);
+        } else {
+          setMessages([]);
+        }
       } catch (error) {
-        console.error('Error fetching messages:', error);
-        setError('Failed to load messages');
+        console.error("Error fetching messages:", error);
+        setError("Failed to load messages");
+        setMessages([]); // Set empty array instead of keeping old messages
       } finally {
         setLoading(false);
       }
@@ -177,12 +215,21 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [selectedChatId]);
 
   const selectChat = (chatId: string) => {
+    console.log("🔄 Selecting chat:", chatId);
+    console.log("🔄 Current selected chat:", selectedChatId);
+
+    // Clear messages before switching to prevent showing old messages
+    if (chatId !== selectedChatId) {
+      setMessages([]);
+      setError(null);
+    }
+
     setSelectedChatId(chatId);
   };
 
   const sendMessage = async (content: string, file?: File) => {
     if (!selectedChatId || !user?.User_id) return;
-    
+
     const hasAttachment = !!file;
 
     const tempMessage: Message = {
@@ -190,117 +237,130 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       Sender_id: user.User_id,
       content,
       timestamp: new Date(),
-      type: hasAttachment ? 'file' : 'text',
-      status: 'sending',
+      type: hasAttachment ? "file" : "text",
+      status: "sending",
       attachmentName: file?.name,
-      attachmentUrl: file ? URL.createObjectURL(file) : undefined
+      attachmentUrl: file ? URL.createObjectURL(file) : undefined,
     };
 
-    setMessages(prev => [...prev, tempMessage]);
+    setMessages((prev) => [...prev, tempMessage]);
 
     try {
       const messageData: any = {
         Conversation_id: parseInt(selectedChatId),
         Sender_id: user.User_id,
         Content: content,
-        Message_Type: ConversationType.direct || 'direct'
+        Message_Type: ConversationType.direct || "direct",
       };
-      
+
       if (hasAttachment && file) {
         const fakeAttachmentUrl = `uploads/${file.name}`;
         messageData.Attachment_Url = fakeAttachmentUrl;
       }
-      
+
       const response = await createMessage(messageData);
       const realMessage: Message = {
         id: response.Message_id?.toString() || `msg-${Date.now()}`,
-        Sender_id: typeof response.Sender_id === 'number' ? response.Sender_id : Number(response.Sender_id),
+        Sender_id:
+          typeof response.Sender_id === "number"
+            ? response.Sender_id
+            : Number(response.Sender_id),
         content: response.Content || content,
-        timestamp: response.Created_at ? new Date(response.Created_at) : new Date(),
-        type: response.Attachment_Url ? 'file' : 'text',
-        status: 'delivered',
+        timestamp: response.Created_at
+          ? new Date(response.Created_at)
+          : new Date(),
+        type: response.Attachment_Url ? "file" : "text",
+        status: "delivered",
         attachmentUrl: response.Attachment_Url || undefined,
-        attachmentName: response.Attachment_Url ? response.Attachment_Url.split('/').pop() : undefined
+        attachmentName: response.Attachment_Url
+          ? response.Attachment_Url.split("/").pop()
+          : undefined,
       };
-      
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempMessage.id ? realMessage : msg
-      ));
 
-      setChats(prev => prev.map(chat => 
-        chat.id === selectedChatId 
-          ? { ...chat, lastMessage: realMessage }
-          : chat
-      ));
-      
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === tempMessage.id ? realMessage : msg))
+      );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === selectedChatId
+            ? { ...chat, lastMessage: realMessage }
+            : chat
+        )
+      );
+
       setTimeout(async () => {
         try {
           if (response.Message_id) {
             await markMessageAsRead(response.Message_id);
-            setMessages(prev => prev.map(msg => 
-              msg.id === realMessage.id 
-                ? { ...msg, status: 'read' }
-                : msg
-            ));
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === realMessage.id ? { ...msg, status: "read" } : msg
+              )
+            );
           }
         } catch (error) {
-          console.error('Error marking message as read:', error);
+          console.error("Error marking message as read:", error);
         }
       }, 2000);
-      
     } catch (error) {
-      console.error('Error sending message:', error);
-      
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempMessage.id 
-          ? { ...msg, status: 'error' }
-          : msg
-      ));
+      console.error("Error sending message:", error);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempMessage.id ? { ...msg, status: "error" } : msg
+        )
+      );
     }
   };
 
-  const createNewConversation = async (User_id: number, title?: string): Promise<string> => {
-    if (!user?.User_id) throw new Error('User not authenticated');
-    
+  const createNewConversation = async (
+    User_id: number,
+    title?: string
+  ): Promise<string> => {
+    if (!user?.User_id) throw new Error("User not authenticated");
+
     try {
       setLoading(true);
-      
+
       const conversationData = {
         Title: title || `Chat with User ${User_id}`,
         Type: ConversationType.direct,
         Is_Active: true,
-        Sender_id: user.User_id
+        Sender_id: user.User_id,
       };
-      
+
       const newConversation = await createConversation(conversationData);
-      
+
       await createSender({
         Conversation_id: newConversation.Conversation_id,
-        User_Type: { User_Type: user?.User_Type || 'Patient' }, 
+        User_Type: { User_Type: user?.User_Type || "Patient" },
         Joined_at: new Date(),
-        Is_Active: true
+        Is_Active: true,
       });
-      
+
       const newChat: Chat = {
         id: newConversation.Conversation_id.toString(),
-        participants: [{
-          id: User_id.toString(),
-          name: `User ${User_id}`,
-          role: 'patient',
-          isOnline: false
-        }],
+        participants: [
+          {
+            id: User_id.toString(),
+            name: `User ${User_id}`,
+            role: "patient",
+            isOnline: false,
+          },
+        ],
         unreadCount: 0,
-        type: 'direct',
-        title: conversationData.Title
+        type: "direct",
+        title: conversationData.Title,
       };
-      
-      setChats(prev => [newChat, ...prev]);
+
+      setChats((prev) => [newChat, ...prev]);
       setSelectedChatId(newChat.id);
-      
+
       return newChat.id;
     } catch (error) {
-      console.error('Error creating conversation:', error);
-      throw new Error('Failed to create conversation');
+      console.error("Error creating conversation:", error);
+      throw new Error("Failed to create conversation");
     } finally {
       setLoading(false);
     }
@@ -314,7 +374,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     error,
     selectChat,
     sendMessage,
-    createNewConversation
+    createNewConversation,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
@@ -323,7 +383,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useChat = (): ChatContextType => {
   const context = useContext(ChatContext);
   if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider');
+    throw new Error("useChat must be used within a ChatProvider");
   }
   return context;
 };

@@ -54,6 +54,20 @@ export const pharmacistApi = {
     }
   },
 
+  getByUserId: async (userId: number): Promise<Pharmacist> => {
+    try {
+      const response = await apiClient.get<Pharmacist>(
+        `/pharmacies/user/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      if (isApiError(error) && (error as any).response?.status === 404) {
+        throw new Error(`Pharmacy for user ID ${userId} not found`);
+      }
+      throw createErrorMessage("Failed to fetch pharmacy for user");
+    }
+  },
+
   update: async (
     Pharmacist_id: string,
     pharmacistData: Partial<Pharmacist>

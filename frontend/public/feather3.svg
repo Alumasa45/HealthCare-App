@@ -1,0 +1,36 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="featherGradient3" cx="50%" cy="30%">
+      <stop offset="0%" style="stop-color:#F8F8FF;stop-opacity:0.9" />
+      <stop offset="40%" style="stop-color:#E6E6FA;stop-opacity:0.8" />
+      <stop offset="80%" style="stop-color:#DDA0DD;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#D8BFD8;stop-opacity:0.5" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Small, delicate feather -->
+  <path d="M50 15 C48 18, 46 25, 45 40 C44 55, 46 65, 48 72 C50 75, 52 72, 54 65 C56 55, 55 40, 52 25 C51 18, 50 15, 50 15 Z" 
+        fill="url(#featherGradient3)" stroke="#B19CD9" stroke-width="0.3" opacity="0.9"/>
+  
+  <!-- Wispy barbs -->
+  <g opacity="0.5">
+    <path d="M45 22 C41 23, 38 24, 37 26" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M45 28 C41 29, 38 30, 37 32" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M44 34 C40 35, 37 36, 36 38" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M44 40 C40 41, 37 42, 36 44" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M45 46 C41 47, 38 48, 37 50" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M45 52 C41 53, 38 54, 37 56" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M46 58 C42 59, 39 60, 38 62" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    
+    <path d="M52 22 C56 23, 59 24, 60 26" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M53 28 C57 29, 60 30, 61 32" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M54 34 C58 35, 61 36, 62 38" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M54 40 C58 41, 61 42, 62 44" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M53 46 C57 47, 60 48, 61 50" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M53 52 C57 53, 60 54, 61 56" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+    <path d="M52 58 C56 59, 59 60, 60 62" fill="none" stroke="#DDA0DD" stroke-width="0.6"/>
+  </g>
+  
+  <!-- Delicate spine -->
+  <line x1="50" y1="15" x2="48" y2="75" stroke="#B19CD9" stroke-width="0.8" opacity="0.8"/>
+</svg>

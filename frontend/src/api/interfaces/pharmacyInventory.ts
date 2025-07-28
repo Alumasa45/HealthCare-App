@@ -17,6 +17,7 @@ export interface PharmacyInventory {
     Brand_Name: string;
     Category: string;
     Dosage: string;
+    Image_url?: string;
   };
 }
 

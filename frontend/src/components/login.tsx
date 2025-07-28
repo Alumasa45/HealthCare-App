@@ -5,81 +5,99 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import z from "zod";
 
-
 const formInfo = z.object({
-    Email: z
+  Email: z
     .string()
     .min(2, "First name must be at least 2 characters")
     .max(50, "Should not exceed 50 characters."),
-    Password: z
-        .string()
-        .min(8, "Password should be at least 8 characters.")
-        .regex(/[A-Z]/, "Password should contain at least one uppercase letter!")
-        .regex(/[a-z]/, "Password must contain at least one lowercase letter!")
-        .regex(/\d/, "Password must contain at least one number!")
+  Password: z
+    .string()
+    .min(8, "Password should be at least 8 characters.")
+    .regex(/[A-Z]/, "Password should contain at least one uppercase letter!")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter!")
+    .regex(/\d/, "Password must contain at least one number!"),
 });
 
 type FormData = z.infer<typeof formInfo>;
 
 function validateField<T>(value: T, schema: z.ZodType<T>) {
-    const result = schema.safeParse(value);
-    return result.success 
-    ?undefined: result.error.issues.map((issue) => issue.message);
+  const result = schema.safeParse(value);
+  return result.success
+    ? undefined
+    : result.error.issues.map((issue) => issue.message);
 }
 
 function LoginForm() {
-    const navigate = useNavigate();
-    const { login } = useAuth();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const form = useForm({
-        defaultValues: {
-        Email: "",
-        Password: ""
+  const form = useForm({
+    defaultValues: {
+      Email: "",
+      Password: "",
     } as FormData,
-    onSubmit: async ({ value}) => {
-        try {
-            const result = formInfo.safeParse(value);
-            if(!result.success) {
-                console.log("Validation failed:", result.error.issues);
-                return;
-            }
-            const apiData = { ...value};
-            const {token, user: userData } = await userApi.login(apiData);
-            const user = userData;
-            
-            login(token, user);
-            console.log("Login successful:", user);
-            console.log("User type for redirection:", user.User_Type);
-            toast.success("Logged in successfully! Redirecting to your dashboard.");
-            navigate({to: '/dashboard', replace: true})
-        } catch (error) {
-            console.error("Registration failed:", error);
-            alert("Log in failed.😞 Please try again. 💡Ensure you are entering the correct details.")
-        } finally {
-            form.reset();
+    onSubmit: async ({ value }) => {
+      try {
+        const result = formInfo.safeParse(value);
+        if (!result.success) {
+          console.log("Validation failed:", result.error.issues);
+          return;
         }
-    },
-});
+        const apiData = { ...value };
+        const { accessToken, user: userData } = await userApi.login(apiData);
+        const user = userData;
 
-return (
-<div className="min-h-screen flex items-center justify-center font-sans">
-    <div className="w-full max-w-md p-6 bg-purple-300 dark:bg-gray-900 font-sans rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-purple-800 dark:text-purple-300 text-center"> Log in to your Account.</h2>
-        <form onSubmit={(e) => {
+        login(accessToken, user);
+        console.log("Login successful:", user);
+        console.log("User type for redirection:", user.User_Type);
+        toast.success("Logged in successfully! Redirecting to your dashboard.");
+        navigate({ to: "/dashboard", replace: true });
+      } catch (error) {
+        console.error("Registration failed:", error);
+        alert(
+          "Log in failed.😞 Please try again. 💡Ensure you are entering the correct details."
+        );
+      } finally {
+        form.reset();
+      }
+    },
+  });
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center font-sans relative"
+      style={{
+        backgroundImage: "url('/Stethoscope neon.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div
+        className="w-full max-w-md p-6 bg-purple-300 dark:bg-gray-900 font-sans rounded-lg shadow-md relative z-10"
+        style={{ backgroundColor: "rgba(147, 51, 234, 0.95)" }}
+      >
+        <h2 className="text-2xl font-bold mb-6 text-purple-800 dark:text-purple-300 text-center">
+          {" "}
+          Log in to your Account.
+        </h2>
+        <form
+          onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
             form.handleSubmit();
-        }}
-        className="space-y-4 mx-auto p-6 text-gray-100 dark:text-gray-900 rounded-lg"
+          }}
+          className="space-y-4 mx-auto p-6 text-gray-100 dark:text-gray-900 rounded-lg"
         >
-            {/* Email field */}
-            <form.Field
+          {/* Email field */}
+          <form.Field
             name="Email"
             validators={{
               onChange: ({ value }) =>
                 validateField(value, formInfo.shape.Email),
-              onBlur: ({ value }) =>
-                validateField(value, formInfo.shape.Email),
+              onBlur: ({ value }) => validateField(value, formInfo.shape.Email),
             }}
           >
             {(field) => (
@@ -174,9 +192,9 @@ return (
             </form.Subscribe>
           </div>
         </form>
+      </div>
     </div>
-</div>
-);
+  );
 }
 
 export default LoginForm;

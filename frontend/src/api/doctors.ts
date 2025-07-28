@@ -20,21 +20,6 @@ export const doctorApi = {
     }
   },
 
-  login: async (credentials: {
-    License_number: string;
-  }): Promise<LoginResponse> => {
-    try {
-      console.log("Sending login request with:", credentials);
-      const response = await apiClient.post<LoginResponse>("/doctors/login", {
-        License_number: credentials.License_number,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login error details:", error);
-      throw handleApiError(error);
-    }
-  },
-
   getAll: async (): Promise<Doctors[]> => {
     try {
       const response = await apiClient.get<Doctors[]>("/doctors");

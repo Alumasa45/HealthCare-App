@@ -11,9 +11,30 @@ export const userApi = {
     try {
       const response = await apiClient.post<AuthResponse>("/users", userData);
       return response.data;
-    } catch (error) {
-      console.log("Error registering user", error);
-      throw new Error("Error registering user");
+    } catch (error: any) {
+      console.error("Error registering user:", error);
+
+      // Pass through the original error with more context
+      if (error?.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const message =
+          error.response.data?.message || `Server error (${status})`;
+
+        if (status === 409) {
+          throw new Error(`User already exists: ${message}`);
+        } else if (status === 400) {
+          throw new Error(`Invalid data: ${message}`);
+        } else {
+          throw new Error(`Registration failed: ${message}`);
+        }
+      } else if (error?.request) {
+        // Network error
+        throw new Error("Network error: Unable to reach server");
+      } else {
+        // Other error
+        throw new Error(error?.message || "Unknown error occurred");
+      }
     }
   },
 
@@ -62,5 +83,18 @@ export const userApi = {
   listUsersPublic: async (): Promise<Partial<User>[]> => {
     const response = await apiClient.get<Partial<User>[]>("/users/public");
     return response.data;
+  },
+
+  // Change password
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<void> => {
+    try {
+      await apiClient.post("/users/change-password", data);
+    } catch (error) {
+      console.log("Error changing password", error);
+      throw new Error("Error changing password");
+    }
   },
 };

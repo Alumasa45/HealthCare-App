@@ -56,8 +56,8 @@ export class AppointmentsService {
   async findByDoctorId(Doctor_id: number): Promise<Appointment[]> {
     try {
       const appointments = await this.appointmentRepository.find({
-        where: { doctor:{user:{User_id:Doctor_id}} },
-        relations: ['patient', 'patient.user'],
+        where: { Doctor_id },
+        relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
         order: { Appointment_Date: 'DESC', Appointment_Time: 'DESC' },
       });
       this.logger.log(
@@ -75,21 +75,41 @@ export class AppointmentsService {
 
   async findByPatientId(Patient_id: number): Promise<Appointment[]> {
     try {
-      const patients = await this.appointmentRepository.find({
-        where: { patient:{user:{User_id:Patient_id}} },
-        relations: ['doctor'],
+      const appointments = await this.appointmentRepository.find({
+        where: { Patient_id },
+        relations: ['patient', 'patient.user', 'doctor'],
         order: { Appointment_Date: 'DESC', Appointment_Time: 'DESC' },
       });
       this.logger.log(
-        `Retrieved ${patients.length} appointments for patient ${Patient_id}`,
+        `Retrieved ${appointments.length} appointments for patient ${Patient_id}`,
       );
-      return patients;
+      return appointments;
     } catch (error) {
       this.logger.error(
         `Failed to retrieve appointments for patient ${Patient_id}`,
         error.stack,
       );
       throw new BadRequestException('Failed to retrieve patient appointments');
+    }
+  }
+
+  async findByUserId(User_id: number): Promise<Appointment[]> {
+    try {
+      const appointments = await this.appointmentRepository.find({
+        where: { patient: { User_id } },
+        relations: ['patient', 'patient.user', 'doctor'],
+        order: { Appointment_Date: 'DESC', Appointment_Time: 'DESC' },
+      });
+      this.logger.log(
+        `Retrieved ${appointments.length} appointments for user ${User_id}`,
+      );
+      return appointments;
+    } catch (error) {
+      this.logger.error(
+        `Failed to retrieve appointments for user ${User_id}`,
+        error.stack,
+      );
+      throw new BadRequestException('Failed to retrieve user appointments');
     }
   }
 
@@ -119,7 +139,7 @@ export class AppointmentsService {
       const updatedAppointment =
         await this.appointmentRepository.save(appointment);
       this.logger.log(
-        `Appointment with Id ${Appointment} updated successfully!`,
+        `Appointment with Id ${Appointment_id} updated successfully!`,
       );
       return updatedAppointment;
     } catch (error) {

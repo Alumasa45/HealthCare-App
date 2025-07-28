@@ -1,20 +1,21 @@
 import React, { useEffect } from "react";
 import PatientDashboard from "./dashboards/PatientDashboard";
 import DoctorDashboard from "./dashboards/DoctorDashboard";
-import { useAuth } from "@/contexts/AuthContext";
 import PharmacistDashBoard from "./dashboards/PharmacistDashboard";
+import AdminDashboard from "./dashboards/AdminDashboard";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "@tanstack/react-router";
 
 const Dashboard: React.FC = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate({ to: '/login', replace: true });
+      navigate({ to: "/login", replace: true });
     }
   }, [isLoading, isAuthenticated, navigate]);
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -25,25 +26,28 @@ const Dashboard: React.FC = () => {
   if (!isAuthenticated) {
     return null;
   }
-  
+
   const renderDashboard = () => {
     console.log("Dashboard user data:", user);
     console.log("User_Type:", user?.User_Type);
-    console.log("User object keys:", user ? Object.keys(user) : 'No user');
+    console.log("User object keys:", user ? Object.keys(user) : "No user");
     console.log("Is user authenticated:", !!user);
-    
+
     // Ensure case-insensitive comparison for user types
     const userType = user?.User_Type?.toLowerCase();
     console.log("Normalized user type for comparison:", userType);
-    
-    if (userType === 'doctor') {
+
+    if (userType === "admin") {
+      return <AdminDashboard />;
+    }
+    if (userType === "doctor") {
       return <DoctorDashboard />;
     }
-    if (userType === 'patient') {
+    if (userType === "patient") {
       return <PatientDashboard />;
     }
-    if (userType === 'pharmacist') {
-      return <PharmacistDashBoard/>
+    if (userType === "pharmacist") {
+      return <PharmacistDashBoard />;
     }
     return (
       <div>
@@ -51,8 +55,6 @@ const Dashboard: React.FC = () => {
       </div>
     );
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans">
@@ -66,7 +68,7 @@ const Dashboard: React.FC = () => {
             Welcome, {user?.First_Name} {user?.Last_Name} ({user?.User_Type})
           </p>
         </div>
-        
+
         {renderDashboard()}
       </div>
     </div>

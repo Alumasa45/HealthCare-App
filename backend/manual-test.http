@@ -1,0 +1,21 @@
+# Manual test without variables - Replace TOKEN_HERE with actual token
+
+# Step 1: Login to get fresh token
+POST http://localhost:3001/auth
+Content-Type: application/json
+
+{
+  "Email": "auth@gmail.com",
+  "Password": "admin123"
+}
+
+###
+
+# Step 2: Manual test with hardcoded token (replace TOKEN_HERE)
+GET http://localhost:3001/users
+Authorization: Bearer TOKEN_HERE
+
+###
+
+# Step 3: Test debug endpoint to verify server is running
+GET http://localhost:3001/debug/public

@@ -1,23 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/components/theme-provider";
 import { FaHospitalUser } from "react-icons/fa";
-import { ThemeToggle } from "./ThemeToggle";
+import ThemeSelector from "./ThemeSelector";
+import NotificationDropdown from "./NotificationDropdown";
 
 export default function Header() {
-  const { setTheme } = useTheme();
   const navigate = useNavigate();
 
   return (
     <header
-      className={`p-2 flex gap-2 bg-background text-foreground justify-between sticky top-0 border-b shadow z-50 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95`}
+      className={`p-2 flex gap-2 bg-background text-foreground justify-between sticky top-0 border-b shadow z-50 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 light-purple:bg-light-purple-50/95`}
     >
       <FaHospitalUser className=" size-12" />
       <nav className="flex flex-row">
@@ -53,8 +45,9 @@ export default function Header() {
                 Dashboard
               </Link>
             </li> */}
-          <div className="gap-40">
-            <ThemeToggle size="sm" />
+          <div className="flex items-center gap-4">
+            <NotificationDropdown />
+            <ThemeSelector />
           </div>
           <div className="justify-between">
             <Button

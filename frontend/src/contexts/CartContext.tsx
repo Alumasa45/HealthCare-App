@@ -5,10 +5,40 @@ import type {
   PharmacyInventory,
 } from "@/api/interfaces/pharmacy";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+
+//medicine and pharmacy Inventory interfaces.
+interface FlexiblePharmacyInventory {
+  Inventory_id?: number;
+  Pharmacy_id: number;
+  Medicine_id: number;
+  Batch_Number: string;
+  Expiry_Date: Date | string;
+  Stock_Quantity: number;
+  Unit_Price: number;
+  Supplier_Name: string;
+  Purchase_Date?: Date | string;
+  Last_Restocked?: Date | string;
+  Wholesale_Price?: number;
+  Created_at?: Date | string;
+  Updated_at?: Date | string;
+  medicine?: {
+    Medicine_id: number;
+    Medicine_Name: string;
+    Brand_Name: string;
+    Manufacturer?: string;
+    Category: string;
+    Dosage: string;
+    Strength?: string;
+    Description?: string;
+    Side_Effects?: string;
+    Storage_Instructions?: string;
+  };
+}
 
 interface CartContextType {
   cart: Cart;
-  addToCart: (inventory: PharmacyInventory, quantity?: number) => void;
+  addToCart: (inventory: FlexiblePharmacyInventory, quantity?: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -38,6 +68,7 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
   switch (action.type) {
     case "ADD_TO_CART": {
       const { inventory, quantity } = action.payload;
+
       const existingItemIndex = state.items.findIndex(
         (item) => item.inventory.Inventory_id === inventory.Inventory_id
       );
@@ -45,7 +76,7 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
       let newItems: CartItem[];
 
       if (existingItemIndex >= 0) {
-        // Update existing item
+        // Update existing item.
         newItems = state.items.map((item, index) => {
           if (index === existingItemIndex) {
             const newQuantity = item.quantity + quantity;
@@ -58,7 +89,7 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
           return item;
         });
       } else {
-        // Add new item
+        //new medicine addition.
         const newItem: CartItem = {
           id: `${inventory.Inventory_id}-${Date.now()}`,
           inventory,
@@ -74,11 +105,13 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
         0
       );
 
-      return {
+      const newState = {
         items: newItems,
         totalItems,
         totalAmount,
       };
+
+      return newState;
     }
 
     case "REMOVE_FROM_CART": {
@@ -147,10 +180,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [cart, dispatch] = useReducer(cartReducer, initialCartState);
+  const { user } = useAuth();
 
-  // Load cart from localStorage on mount
+  // Create user-specific cart key
+  const getCartKey = () => {
+    if (!user?.User_id) return "healthcare-cart-guest";
+    return `healthcare-cart-${user.User_id}`;
+  };
+
   useEffect(() => {
-    const savedCart = localStorage.getItem("healthcare-cart");
+    const cartKey = getCartKey();
+    const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
@@ -159,21 +199,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Error loading cart from localStorage:", error);
       }
     }
-  }, []);
+  }, [user?.User_id]);
 
-  // Save cart to localStorage whenever cart changes
+  //save the cart to localStorage when a change occurs.
   useEffect(() => {
-    localStorage.setItem("healthcare-cart", JSON.stringify(cart));
-  }, [cart]);
+    const cartKey = getCartKey();
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+  }, [cart, user?.User_id]);
 
-  const addToCart = (inventory: PharmacyInventory, quantity: number = 1) => {
-    // Check stock availability
+  // Clear cart when user logs out or switches accounts
+  useEffect(() => {
+    if (!user?.User_id) {
+      dispatch({ type: "CLEAR_CART" });
+    }
+  }, [user?.User_id]);
+
+  const addToCart = (
+    inventory: FlexiblePharmacyInventory,
+    quantity: number = 1
+  ) => {
+    //stock(Medicine) availability.
     if (quantity > inventory.Stock_Quantity) {
       toast.error(`Only ${inventory.Stock_Quantity} items available in stock`);
       return;
     }
 
-    // Check if adding this quantity would exceed stock
     const existingItem = cart.items.find(
       (item) => item.inventory.Inventory_id === inventory.Inventory_id
     );
@@ -188,7 +238,41 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    dispatch({ type: "ADD_TO_CART", payload: { inventory, quantity } });
+    const cartInventory: PharmacyInventory = {
+      Inventory_id: inventory.Inventory_id,
+      Pharmacy_id: inventory.Pharmacy_id,
+      Medicine_id: inventory.Medicine_id,
+      Batch_Number: inventory.Batch_Number,
+      Expiry_Date: inventory.Expiry_Date,
+      Stock_Quantity: inventory.Stock_Quantity,
+      Unit_Price: inventory.Unit_Price,
+      Supplier_Name: inventory.Supplier_Name,
+      Purchase_Date:
+        inventory.Purchase_Date ||
+        inventory.Last_Restocked ||
+        new Date().toISOString(),
+      Created_at: inventory.Created_at,
+      Updated_at: inventory.Updated_at,
+      medicine: inventory.medicine
+        ? {
+            Medicine_id: inventory.medicine.Medicine_id,
+            Medicine_Name: inventory.medicine.Medicine_Name,
+            Brand_Name: inventory.medicine.Brand_Name,
+            Manufacturer: inventory.medicine.Manufacturer || "",
+            Category: inventory.medicine.Category,
+            Dosage: inventory.medicine.Dosage,
+            Strength: inventory.medicine.Strength || "",
+            Description: inventory.medicine.Description || "",
+            Side_Effects: inventory.medicine.Side_Effects || "",
+            Storage_Instructions: inventory.medicine.Storage_Instructions || "",
+          }
+        : undefined,
+    };
+
+    dispatch({
+      type: "ADD_TO_CART",
+      payload: { inventory: cartInventory, quantity },
+    });
     toast.success(
       `${inventory.medicine?.Medicine_Name || "Medicine"} added to cart`
     );

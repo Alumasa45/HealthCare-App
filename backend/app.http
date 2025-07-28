@@ -1,6 +1,6 @@
 
-@url = http://localhost:3000
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsIkVtYWlsIjoiYXV0aEBnbWFpbC5jb20iLCJVc2VyX1R5cGUiOiJBZG1pbiIsImlhdCI6MTc1MjE3MzA3OCwiZXhwIjoxNzUyMTc2Njc4fQ._AAAU5ksNIah_TC98juD9ukokLD-6hd-vnungeaRkgo
+@url = http://localhost:3001
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsIkVtYWlsIjoiYXV0aEBnbWFpbC5jb20iLCJVc2VyX1R5cGUiOiJBZG1pbiIsImlhdCI6MTc1MzY1Mzk4MiwiZXhwIjoxNzUzNjU3NTgyfQ.jsQBZf9q9xhpuqneuGeW7hqMmJBS7Cg0qFPdgr9fLJg
 
 ###############AUTHENTICATION MANAGEMENT###############
 # Sign in a user. 
@@ -52,7 +52,8 @@ Content-Type: application/json
 
 # Delete a user by ID.
 #####
-DELETE {{url}}/users/1
+DELETE {{url}}/users/5
+Authorization: Bearer {{accessToken}}
 
 ###############ADDRESS MANAGEMENT###############
 # Create a new address.
@@ -153,6 +154,7 @@ Content-Type: application/json
 # Get all doctors.
 #####
 GET {{url}}/doctors
+Authorization: Bearer {{accessToken}}
 
 # Get a doctor by ID.
 #####

@@ -12,7 +12,11 @@ import { Patient } from 'src/patients/entities/patient.entity';
 import { Repository } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
 import { JwtService } from '@nestjs/jwt';
-import { User_Type, Account_Status } from 'src/users/entities/user.entity';
+import {
+  User_Type,
+  Account_Status,
+  Gender,
+} from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -28,108 +32,103 @@ export class DoctorsService {
 
   async create(createDoctorDto: CreateDoctorDto): Promise<Doctor> {
     try {
+      this.logger.log(
+        'Creating doctor with data:',
+        JSON.stringify(createDoctorDto, null, 2),
+      );
+
+      // Validate required fields
+      if (
+        !createDoctorDto.Email ||
+        !createDoctorDto.Password ||
+        !createDoctorDto.License_number
+      ) {
+        throw new BadRequestException(
+          'Email, Password, and License_number are required',
+        );
+      }
+
+      // Check if license number already exists
+      const existingDoctor = await this.doctorRepository.findOne({
+        where: { License_number: createDoctorDto.License_number },
+      });
+
+      if (existingDoctor) {
+        throw new BadRequestException(
+          `Doctor with license number ${createDoctorDto.License_number} already exists`,
+        );
+      }
+
       const userDto = {
         Email: createDoctorDto.Email,
         Password: createDoctorDto.Password,
-        Phone_Number: createDoctorDto.Phone_Number,
-        First_Name: createDoctorDto.First_Name,
-        Last_Name: createDoctorDto.Last_Name,
-        Date_of_Birth: createDoctorDto.Date_of_Birth,
-        Gender: createDoctorDto.Gender,
+        Phone_Number: createDoctorDto.Phone_Number || '',
+        First_Name: createDoctorDto.First_Name || '',
+        Last_Name: createDoctorDto.Last_Name || '',
+        Date_of_Birth: createDoctorDto.Date_of_Birth || '',
+        Gender: (createDoctorDto.Gender as Gender) || Gender.Other,
         User_Type: User_Type.Doctor,
         Account_Status: Account_Status.Active,
       };
 
-      const createdUser = await this.usersService.create(userDto);
+      this.logger.log(
+        'Creating user with data:',
+        JSON.stringify(userDto, null, 2),
+      );
+      let createdUser;
+      try {
+        createdUser = await this.usersService.create(userDto);
+        this.logger.log(
+          'User created successfully:',
+          createdUser.user?.User_id,
+        );
+      } catch (userError) {
+        this.logger.error('Failed to create user:', userError.message);
+        if (userError.message?.includes('User already exists')) {
+          throw new BadRequestException(
+            'A user with this email already exists. Please use a different email.',
+          );
+        }
+        throw new BadRequestException(
+          `User creation failed: ${userError.message}`,
+        );
+      }
+
+      const userId = createdUser.user?.User_id || createdUser.User_id;
 
       const doctor = this.doctorRepository.create({
-        User_id: createdUser.User_id,
-        Specialization: createDoctorDto.Specialization,
-        Experience_Years: createDoctorDto.Experience_Years,
+        User_id: userId,
+        Specialization: createDoctorDto.Specialization || '',
+        Experience_Years: createDoctorDto.Experience_Years || 0,
         License_number: createDoctorDto.License_number,
-        Qualification: createDoctorDto.Qualification,
-        Department: createDoctorDto.Department,
-        Bio: createDoctorDto.Bio,
-        Languages_Spoken: createDoctorDto.Languages_Spoken,
-        Is_Available_Online: createDoctorDto.Is_Available_Online,
-        Rating: createDoctorDto.Rating,
-        Reviews: createDoctorDto.Reviews,
+        Qualification: createDoctorDto.Qualification || '',
+        Department: createDoctorDto.Department || '',
+        Bio: createDoctorDto.Bio || '',
+        Languages_Spoken: createDoctorDto.Languages_Spoken || '',
+        Is_Available_Online: createDoctorDto.Is_Available_Online || false,
+        Rating: createDoctorDto.Rating || 0,
+        Reviews: createDoctorDto.Reviews || '',
         Created_at: createDoctorDto.Created_at || new Date(),
         Updated_at: createDoctorDto.Updated_at || new Date(),
       });
 
+      this.logger.log(
+        'Saving doctor with data:',
+        JSON.stringify(doctor, null, 2),
+      );
       const savedDoctor = await this.doctorRepository.save(doctor);
+      this.logger.log('Doctor created successfully:', savedDoctor.Doctor_id);
       return savedDoctor;
     } catch (error) {
       this.logger.error('Failed to create doctor', error.stack);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new BadRequestException({
         message: 'Failed to create Doctor.',
         error: error.message,
+        details: error.detail || error.message,
       });
-    }
-  }
-
-  async doctorLogin(License_number: string) {
-    try {
-      this.logger.log(`Attempting login for license number: ${License_number}`);
-
-      const doctor = await this.doctorRepository.findOne({
-        where: { License_number }
-      });
-
-      if (!doctor) {
-        this.logger.warn(`Doctor with license ${License_number} not found!`);
-        throw new UnauthorizedException('⚠Invalid Credentials');
-      }
-
-      // Get the associated user information
-      const user = await this.usersService.findOne(doctor.User_id);
-      if (!user) {
-        throw new UnauthorizedException('Associated user not found');
-      }
-
-      // Create payload for JWT token
-      const payload = {
-        sub: doctor.Doctor_id,
-        User_Type: 'Doctor',
-        License_Number: doctor.License_number,
-      };
-
-      const accessToken = await this.jwtService.signAsync(payload);
-
-      // Return complete data structure matching frontend expectations
-      return {
-        token: accessToken,
-        user: {
-          User_id: user.User_id,
-          Email: user.Email,
-          Phone_Number: user.Phone_Number,
-          First_Name: user.First_Name,
-          Last_Name: user.Last_Name,
-          Date_of_Birth: user.Date_of_Birth,
-          Gender: user.Gender,
-          User_Type: user.User_Type,
-          Account_Status: user.Account_Status,
-          Doctor_id: doctor.Doctor_id, // This is the key field needed!
-        },
-        doctor: {
-          Doctor_id: doctor.Doctor_id,
-          User_id: doctor.User_id,
-          License_number: doctor.License_number,
-          Specialization: doctor.Specialization,
-          Qualification: doctor.Qualification,
-          Experience_Years: doctor.Experience_Years,
-          Department: doctor.Department,
-          Bio: doctor.Bio,
-          Languages_Spoken: doctor.Languages_Spoken,
-          Is_Available_Online: doctor.Is_Available_Online,
-          Rating: doctor.Rating,
-          Reviews: doctor.Reviews,
-        },
-      };
-    } catch (error) {
-      this.logger.error(`Login failed: ${error.message}`, error.stack);
-      throw error;
     }
   }
 

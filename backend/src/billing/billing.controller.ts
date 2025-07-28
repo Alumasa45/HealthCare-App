@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { CreateBillingDto } from './dto/create-billing.dto';
 import { PayBillDto, UpdateBillingDto } from './dto/update-billing.dto';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CalculateSessionBillDto } from './dto/calculate-session-bill.dto';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Billing')
 @Controller('billing')
@@ -50,6 +66,31 @@ export class BillingController {
   @ApiResponse({ status: 404, description: 'Bill not found' })
   payBill(@Param('id') id: string, @Body() payBillDto: PayBillDto) {
     return this.billingService.payBill(+id, payBillDto);
+  }
+
+  @Post('calculate-session-bill')
+  @ApiOperation({
+    summary:
+      'Calculate total bill for user session (consultation + medicines + prescriptions)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Session bill calculated successfully',
+  })
+  calculateSessionBill(
+    @Body() calculateSessionBillDto: CalculateSessionBillDto,
+  ) {
+    return this.billingService.calculateSessionBill(calculateSessionBillDto);
+  }
+
+  @Post('create-session-bill')
+  @ApiOperation({ summary: 'Create consolidated bill for user session' })
+  @ApiResponse({
+    status: 201,
+    description: 'Session bill created successfully',
+  })
+  createSessionBill(@Body() calculateSessionBillDto: CalculateSessionBillDto) {
+    return this.billingService.createSessionBill(calculateSessionBillDto);
   }
 
   @Delete(':id')

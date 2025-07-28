@@ -1,38 +1,42 @@
-
 export interface Doctors {
-    Doctor_id?: number;
-    User_id: number;
-    License_number: string;
-    Specialization: string;
-    Qualification: string;
-    Experience_Years: number;
-    Department: string;
-    Bio: string;
-    Languages_Spoken: string;
-    Is_Available_Online: boolean;
-    Rating: number;
-    Reviews: string;
-    Created_at?: Date;
-    Updated_at?: Date;
+  Doctor_id?: number;
+  User_id: number;
+  License_number: string;
+  Specialization: string;
+  Qualification: string;
+  Experience_Years: number;
+  Department: string;
+  Bio: string;
+  Languages_Spoken: string;
+  Is_Available_Online: boolean;
+  Rating: number;
+  Reviews: string;
+  Created_at?: Date;
+  Updated_at?: Date;
 }
 
-export interface DocLoginCredentials {
-  License_number: string; 
-}
+export interface DoctorInfo {
+  // User fields required by backend
+  Email: string;
+  Password: string;
+  Phone_Number: string;
+  First_Name: string;
+  Last_Name: string;
+  Date_of_Birth: string;
+  Gender: "Male" | "Female" | "Other";
 
-export interface DoctorInfo extends DocLoginCredentials {
-    Doctor_id?: number;
-    User_id: number;
-    License_number: string;
-    Specialization: string;
-    Qualification: string;
-    Experience_Years: number;
-    Department: string;
-    Bio: string;
-    Languages_Spoken: string;
-    Is_Available_Online: boolean;
-    Rating: number;
-    Reviews: string;
+  // Doctor-specific fields
+  Doctor_id?: number;
+  License_number: string;
+  Specialization: string;
+  Qualification: string;
+  Experience_Years: number;
+  Department: string;
+  Bio: string;
+  Languages_Spoken: string;
+  Is_Available_Online: boolean;
+  Rating: number;
+  Reviews: string;
 }
 
 export interface LoginResponse {
@@ -42,11 +46,10 @@ export interface LoginResponse {
     Email: string;
     First_Name: string;
     Last_Name: string;
-    User_Type: 'Doctor' | 'Patient' | 'Admin' | 'Pharmacist'
+    User_Type: "Doctor" | "Patient" | "Admin" | "Pharmacist";
   };
   doctor: {
     Doctor_id: number;
     License_Number: string;
-  }
+  };
 }
-
