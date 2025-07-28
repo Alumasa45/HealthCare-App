@@ -103,7 +103,7 @@ export class PatientProfileService {
     try {
       // Get all users with User_Type = 'Patient'
       const patientUsers = await this.userRepository.find({
-        where: { User_Type: 'Patient' },
+        where: { User_Type: 'Patient' as User['User_Type'] },
       });
 
       this.logger.log(`Found ${patientUsers.length} users with Patient type`);
