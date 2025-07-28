@@ -9,6 +9,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
+import { PatientProfileService } from './patient-profile.service';
 
 @Injectable()
 export class PatientsService {
@@ -17,6 +18,7 @@ export class PatientsService {
   constructor(
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
+    private readonly patientProfileService: PatientProfileService,
   ) {}
 
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
@@ -100,26 +102,40 @@ export class PatientsService {
     try {
       this.logger.log(`Looking for patient with User_id: ${User_id}`);
 
-      // First, let's check if the user exists
-      const allPatients = await this.patientRepository.find();
-      this.logger.log(`Total patients in database: ${allPatients.length}`);
-
-      const patient = await this.patientRepository.findOne({
+      // First check if patient profile exists
+      let patient = await this.patientRepository.findOne({
         where: { User_id },
-        relations: ['user'], // Include user relation for debugging
+        relations: ['user'],
       });
 
       if (!patient) {
-        this.logger.warn(`Patient with User_id ${User_id} not found`);
-        this.logger.log(
-          `Available User_ids: ${allPatients.map((p) => p.User_id).join(', ')}`,
+        this.logger.warn(
+          `Patient with User_id ${User_id} not found. Attempting to create default profile...`,
         );
-        throw new NotFoundException({
-          message:
-            'Patient profile not found for this user. Please complete your patient registration first.',
-          code: 'PATIENT_NOT_FOUND',
-          userId: User_id,
-        });
+
+        // Try to automatically create a patient profile
+        const createdPatient =
+          await this.patientProfileService.ensurePatientProfile(User_id);
+
+        if (createdPatient) {
+          this.logger.log(
+            `✅ Successfully created patient profile for User_id ${User_id}`,
+          );
+          return createdPatient;
+        } else {
+          // If automatic creation failed, throw the original error
+          const allPatients = await this.patientRepository.find();
+          this.logger.log(`Total patients in database: ${allPatients.length}`);
+          this.logger.log(
+            `Available User_ids: ${allPatients.map((p) => p.User_id).join(', ')}`,
+          );
+          throw new NotFoundException({
+            message:
+              'Patient profile not found for this user. Please complete your patient registration first.',
+            code: 'PATIENT_NOT_FOUND',
+            userId: User_id,
+          });
+        }
       }
 
       this.logger.log(

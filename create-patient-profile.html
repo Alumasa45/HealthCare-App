@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Patient Profile - Healthcare App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .required {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Patient Profile for User ID 1</h1>
+        
+        <div id="user-info" class="user-info">
+            <h3>User Information</h3>
+            <p>Loading user details...</p>
+        </div>
+
+        <form id="patient-form">
+            <div class="form-group">
+                <label for="user-id">User ID <span class="required">*</span></label>
+                <input type="number" id="user-id" value="1" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency-name">Emergency Contact Name <span class="required">*</span></label>
+                <input type="text" id="emergency-name" placeholder="John Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency-phone">Emergency Contact Phone <span class="required">*</span></label>
+                <input type="tel" id="emergency-phone" placeholder="+1-555-123-4567" required>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency-relationship">Emergency Contact Relationship <span class="required">*</span></label>
+                <select id="emergency-relationship" required>
+                    <option value="">Select relationship</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Child">Child</option>
+                    <option value="Friend">Friend</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="blood-group">Blood Group <span class="required">*</span></label>
+                <select id="blood-group" required>
+                    <option value="">Select blood group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="height">Height (cm) <span class="required">*</span></label>
+                <input type="number" id="height" placeholder="170" min="50" max="250" required>
+            </div>
+
+            <div class="form-group">
+                <label for="weight">Weight (kg) <span class="required">*</span></label>
+                <input type="number" id="weight" placeholder="70" min="20" max="300" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="allergies">Allergies (Optional)</label>
+                <input type="text" id="allergies" placeholder="e.g., Peanuts, Shellfish">
+            </div>
+
+            <div class="form-group">
+                <label for="chronic-conditions">Chronic Conditions (Optional)</label>
+                <input type="text" id="chronic-conditions" placeholder="e.g., Diabetes, Hypertension">
+            </div>
+
+            <div class="form-group">
+                <label for="insurance-provider">Insurance Provider (Optional)</label>
+                <input type="text" id="insurance-provider" placeholder="e.g., Blue Cross">
+            </div>
+
+            <div class="form-group">
+                <label for="insurance-policy">Insurance Policy Number (Optional)</label>
+                <input type="text" id="insurance-policy" placeholder="e.g., BC123456789">
+            </div>
+
+            <button type="submit" id="create-btn">Create Patient Profile</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        
+        // Load user information
+        async function loadUserInfo() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/1`);
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('user-info').innerHTML = `
+                        <h3>User Information</h3>
+                        <p><strong>Name:</strong> ${user.First_Name} ${user.Last_Name}</p>
+                        <p><strong>Email:</strong> ${user.Email}</p>
+                        <p><strong>Phone:</strong> ${user.Phone_Number || 'Not provided'}</p>
+                        <p><strong>User Type:</strong> ${user.User_Type}</p>
+                        <p><strong>Gender:</strong> ${user.Gender || 'Not provided'}</p>
+                        <p><strong>Date of Birth:</strong> ${user.Date_of_Birth || 'Not provided'}</p>
+                    `;
+                } else {
+                    document.getElementById('user-info').innerHTML = `
+                        <h3>User Information</h3>
+                        <p class="error">Could not load user information. Response: ${response.status}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('user-info').innerHTML = `
+                    <h3>User Information</h3>
+                    <p class="error">Error loading user: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Check if patient profile already exists
+        async function checkExistingPatient() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/patients/user/1`);
+                if (response.ok) {
+                    const patient = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <div class="info">
+                            <strong>Patient Profile Already Exists!</strong><br>
+                            Patient ID: ${patient.Patient_id}<br>
+                            This user already has a patient profile. No need to create a new one.
+                        </div>
+                    `;
+                    document.getElementById('create-btn').disabled = true;
+                    document.getElementById('create-btn').textContent = 'Patient Profile Already Exists';
+                    return true;
+                }
+            } catch (error) {
+                // Expected if patient doesn't exist
+                console.log('Patient profile does not exist yet, ready to create');
+            }
+            return false;
+        }
+
+        // Create patient profile
+        async function createPatientProfile(event) {
+            event.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            const createBtn = document.getElementById('create-btn');
+            
+            createBtn.disabled = true;
+            createBtn.textContent = 'Creating...';
+            resultDiv.innerHTML = '<div class="info">Creating patient profile...</div>';
+
+            const patientData = {
+                User_id: parseInt(document.getElementById('user-id').value),
+                Emergency_Contact_Name: document.getElementById('emergency-name').value.trim(),
+                Emergency_Contact_Phone: document.getElementById('emergency-phone').value.trim(),
+                Emergency_Contact_Relationship: document.getElementById('emergency-relationship').value,
+                Blood_Group: document.getElementById('blood-group').value,
+                Height: parseFloat(document.getElementById('height').value),
+                Weight: parseFloat(document.getElementById('weight').value),
+                Allergies: document.getElementById('allergies').value.trim() || '',
+                Chronic_Conditions: document.getElementById('chronic-conditions').value.trim() || '',
+                Insurance_Provider: document.getElementById('insurance-provider').value.trim() || '',
+                Insurance_Policy_Number: document.getElementById('insurance-policy').value.trim() || ''
+            };
+
+            console.log('Sending patient data:', patientData);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/patients`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(patientData)
+                });
+
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>Patient Profile Created Successfully!</strong><br><br>
+                            Patient ID: ${responseData.Patient_id}<br>
+                            User ID: ${responseData.User_id}<br>
+                            Emergency Contact: ${responseData.Emergency_Contact_Name}<br>
+                            Blood Group: ${responseData.Blood_Group}<br>
+                            Height: ${responseData.Height}cm<br>
+                            Weight: ${responseData.Weight}kg<br><br>
+                            <strong>You can now book appointments!</strong><br>
+                            Try booking an appointment again in the frontend application.
+                        </div>
+                    `;
+                    createBtn.textContent = 'Profile Created Successfully!';
+                    createBtn.style.backgroundColor = '#28a745';
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>Failed to Create Patient Profile</strong><br><br>
+                            Status: ${response.status}<br>
+                            Error: ${responseData.message || 'Unknown error'}<br><br>
+                            <strong>Response Details:</strong><br>
+                            ${JSON.stringify(responseData, null, 2)}
+                        </div>
+                    `;
+                    createBtn.disabled = false;
+                    createBtn.textContent = 'Create Patient Profile';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ <strong>Network Error</strong><br><br>
+                        ${error.message}<br><br>
+                        Please ensure the backend server is running on ${API_BASE_URL}
+                    </div>
+                `;
+                createBtn.disabled = false;
+                createBtn.textContent = 'Create Patient Profile';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserInfo();
+            const patientExists = await checkExistingPatient();
+            
+            if (!patientExists) {
+                document.getElementById('patient-form').addEventListener('submit', createPatientProfile);
+            }
+        });
+
+        // Pre-fill some sample data for quick testing
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values for quick testing
+            document.getElementById('emergency-name').value = 'John Smith';
+            document.getElementById('emergency-phone').value = '+1-555-123-4567';
+            document.getElementById('emergency-relationship').value = 'Parent';
+            document.getElementById('blood-group').value = 'O+';
+            document.getElementById('height').value = '175';
+            document.getElementById('weight').value = '70';
+            document.getElementById('allergies').value = 'None';
+            document.getElementById('chronic-conditions').value = 'None';
+            document.getElementById('insurance-provider').value = 'Health Insurance Co.';
+            document.getElementById('insurance-policy').value = 'HIC123456';
+        });
+    </script>
+</body>
+</html>

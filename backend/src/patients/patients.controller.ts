@@ -8,13 +8,17 @@ import {
   Delete,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
+import { PatientProfileService } from './patient-profile.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(
+    private readonly patientsService: PatientsService,
+    private readonly patientProfileService: PatientProfileService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Register patients.' })
@@ -50,5 +54,31 @@ export class PatientsController {
   @ApiOperation({ summary: 'Deletes Patient by Id.' })
   delete(@Param('id') id: string) {
     return this.patientsService.delete(+id);
+  }
+
+  @Post('ensure-profiles')
+  @ApiOperation({
+    summary: 'Create missing patient profiles for all Patient-type users.',
+  })
+  async ensureMissingPatientProfiles() {
+    return this.patientProfileService.createMissingPatientProfiles();
+  }
+
+  @Post('ensure-profile/:userId')
+  @ApiOperation({
+    summary: 'Ensure patient profile exists for a specific user.',
+  })
+  async ensurePatientProfile(@Param('userId') userId: string) {
+    const result =
+      await this.patientProfileService.ensurePatientProfile(+userId);
+    return result || { message: 'Patient profile could not be created' };
+  }
+
+  @Post('validate-appointment/:userId')
+  @ApiOperation({
+    summary: 'Validate if user is ready for appointment booking.',
+  })
+  async validatePatientForAppointment(@Param('userId') userId: string) {
+    return this.patientProfileService.validatePatientForAppointment(+userId);
   }
 }
