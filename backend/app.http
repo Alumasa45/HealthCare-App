@@ -1,5 +1,5 @@
 
-@url = http://localhost:3001
+@url = https://healthcare-app-60pj.onrender.com
 @accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsIkVtYWlsIjoiYXV0aEBnbWFpbC5jb20iLCJVc2VyX1R5cGUiOiJBZG1pbiIsImlhdCI6MTc1MzY1Mzk4MiwiZXhwIjoxNzUzNjU3NTgyfQ.jsQBZf9q9xhpuqneuGeW7hqMmJBS7Cg0qFPdgr9fLJg
 
 ###############AUTHENTICATION MANAGEMENT###############
@@ -9,8 +9,8 @@ POST {{url}}/auth
 Content-Type: application/json
 
 {
-  "Email": "auth@gmail.com",
-  "Password": "admin123"
+  "Email": "admin@example.com",
+  "Password": "Admin123!"
 }
 
 ###############USER MANAGEMENT###############
@@ -20,14 +20,14 @@ POST {{url}}/users
 Content-Type: application/json
 
 {
-  "Email": "doctor@example.com",
-  "Password": "password123",
-  "Phone_Number": "0733333333",
-  "User_Type": "Doctor",
-  "First_Name": "Doctor",
-  "Last_Name": "Example",
-  "Date_of_Birth": "1999-10-10",
-  "Gender": "Male",
+  "Email": "admin@example.com",
+  "Password": "Admin123!",
+  "Phone_Number": "0715879708",
+  "User_Type": "Admin",
+  "First_Name": "Aquinatta",
+  "Last_Name": "Admin",
+  "Date_of_Birth": "2002-02-10",
+  "Gender": "Female",
   "Account_Status": "Active"
 }
 

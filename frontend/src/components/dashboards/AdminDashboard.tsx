@@ -439,7 +439,7 @@ const AdminDashboard = () => {
         Date_Of_Birth: "",
         Gender: "",
         Address: "",
-        User_Type: newUser.User_Type, // Keep the same type
+        User_Type: newUser.User_Type,
         Password: "",
       });
 
@@ -779,47 +779,63 @@ const AdminDashboard = () => {
                   Register Professionals
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-full max-w-2xl bg-gradient-to-br from-white to-purple-50 border-purple-300/50 sheet-glow sheet-content">
-                <SheetHeader>
-                  <SheetTitle className="text-purple-900">
-                    Professional Registration
-                  </SheetTitle>
-                  <SheetDescription className="text-purple-700">
-                    Create user accounts and register them as doctors or
-                    pharmacists
-                  </SheetDescription>
-                </SheetHeader>
+              <SheetContent className="w-full max-w-2xl bg-gradient-to-br from-white to-purple-50 border-purple-300/50 sheet-glow sheet-content overflow-y-auto max-h-screen">
+                <div className="h-full flex flex-col">
+                  <SheetHeader className="flex-shrink-0">
+                    <SheetTitle className="text-purple-900">
+                      Professional Registration
+                    </SheetTitle>
+                    <SheetDescription className="text-purple-700">
+                      Create user accounts and register them as doctors or
+                      pharmacists
+                    </SheetDescription>
+                  </SheetHeader>
 
-                <Tabs
-                  value={registrationTab}
-                  onValueChange={(value) =>
-                    setRegistrationTab(value as RegistrationTabType)
-                  }
-                  className="mt-6"
-                >
-                  <TabsList className="grid w-full grid-cols-2 bg-purple-100 dark:bg-gray-800">
-                    <TabsTrigger
-                      value="doctor"
-                      className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-gray-700 dark:to-gray-600 border-purple-200 dark:border-gray-600 text-purple-700 dark:text-gray-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-200 data-[state=active]:to-purple-100 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 data-[state=active]:text-purple-800 dark:data-[state=active]:text-white data-[state=active]:border-purple-300 dark:data-[state=active]:border-purple-400"
+                  <div className="flex-1 overflow-y-auto min-h-0 pt-6">
+                    <Tabs
+                      value={registrationTab}
+                      onValueChange={(value) =>
+                        setRegistrationTab(value as RegistrationTabType)
+                      }
+                      className="h-full flex flex-col"
                     >
-                      Doctor Registration
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="pharmacist"
-                      className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-gray-700 dark:to-gray-600 border-purple-200 dark:border-gray-600 text-purple-700 dark:text-gray-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-200 data-[state=active]:to-purple-100 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 data-[state=active]:text-purple-800 dark:data-[state=active]:text-white data-[state=active]:border-purple-300 dark:data-[state=active]:border-purple-400"
-                    >
-                      Pharmacist Registration
-                    </TabsTrigger>
-                  </TabsList>
+                      <TabsList className="grid w-full grid-cols-2 bg-purple-100 dark:bg-gray-800 flex-shrink-0">
+                        <TabsTrigger
+                          value="doctor"
+                          className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-gray-700 dark:to-gray-600 border-purple-200 dark:border-gray-600 text-purple-700 dark:text-gray-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-200 data-[state=active]:to-purple-100 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 data-[state=active]:text-purple-800 dark:data-[state=active]:text-white data-[state=active]:border-purple-300 dark:data-[state=active]:border-purple-400"
+                        >
+                          Doctor Registration
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="pharmacist"
+                          className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-gray-700 dark:to-gray-600 border-purple-200 dark:border-gray-600 text-purple-700 dark:text-gray-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-200 data-[state=active]:to-purple-100 dark:data-[state=active]:from-purple-600 dark:data-[state=active]:to-purple-500 data-[state=active]:text-purple-800 dark:data-[state=active]:text-white data-[state=active]:border-purple-300 dark:data-[state=active]:border-purple-400"
+                        >
+                          Pharmacist Registration
+                        </TabsTrigger>
+                      </TabsList>
 
-                  <TabsContent value="doctor" className="space-y-4">
-                    {renderDoctorRegistrationForm()}
-                  </TabsContent>
+                      <div className="flex-1 overflow-y-auto min-h-0 pt-4">
+                        <TabsContent
+                          value="doctor"
+                          className="space-y-4 h-full m-0"
+                        >
+                          <div className="pb-6">
+                            {renderDoctorRegistrationForm()}
+                          </div>
+                        </TabsContent>
 
-                  <TabsContent value="pharmacist" className="space-y-4">
-                    {renderPharmacistRegistrationForm()}
-                  </TabsContent>
-                </Tabs>
+                        <TabsContent
+                          value="pharmacist"
+                          className="space-y-4 h-full m-0"
+                        >
+                          <div className="pb-6">
+                            {renderPharmacistRegistrationForm()}
+                          </div>
+                        </TabsContent>
+                      </div>
+                    </Tabs>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
           </div>
@@ -1101,7 +1117,6 @@ const AdminDashboard = () => {
           Create User Account
         </Button>
 
-        {/* Show suggestion if user type is selected and there are available users */}
         {newUser.User_Type && getAvailableUsersCount() > 0 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800 font-medium">💡 Information:</p>
@@ -1135,283 +1150,415 @@ const AdminDashboard = () => {
     </Card>
   );
 
-  const renderDoctorRegistrationForm = () => (
-    <div className="space-y-6">
-      {registrationStep === 1 && renderUserCreationForm()}
+  const renderDoctorRegistrationForm = () => {
+    // Debug logging
+    console.log("🔄 Rendering doctor registration form");
+    console.log("  • Registration Step:", registrationStep);
+    console.log("  • Created User ID:", createdUserId);
+    console.log("  • Selected User:", selectedUser);
+    console.log("  • Available Users:", availableUsers.length);
+    console.log("  • Show form fields?", !!(selectedUser || createdUserId));
 
-      {registrationStep === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 2: Register as Doctor</CardTitle>
-            <CardDescription>
-              {createdUserId
-                ? "Complete the doctor profile for the newly created user"
-                : "Select an existing doctor user and complete their professional profile"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!createdUserId && (
-              <div>
-                <Label htmlFor="doctorUser">Select Doctor User *</Label>
-                <Select
-                  value={selectedUser?.User_id.toString() || ""}
-                  onValueChange={(value) => {
-                    const user = availableUsers.find(
-                      (u) => u.User_id.toString() === value
-                    );
-                    setSelectedUser(user || null);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a doctor user account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableUsers.length === 0 ? (
-                      <SelectItem value="no-users" disabled>
-                        No available doctor users found - please create a user
-                        first in Step 1
-                      </SelectItem>
-                    ) : (
-                      availableUsers.map((user) => (
-                        <SelectItem
-                          key={user.User_id}
-                          value={user.User_id.toString()}
-                        >
-                          {user.First_Name} {user.Last_Name} ({user.Email})
+    return (
+      <div className="space-y-6">
+        {/* Add debug info at the top */}
+        <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+          <strong>🔍 Registration State:</strong>
+          <br />• Step: {registrationStep} | Created: {createdUserId || "None"}{" "}
+          | Selected: {selectedUser?.Email || "None"}
+          <br />• Available: {availableUsers.length} | Will show form:{" "}
+          {!!(selectedUser || createdUserId) ? "Yes" : "No"}
+        </div>
+
+        {registrationStep === 1 && renderUserCreationForm()}
+
+        {registrationStep === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Step 2: Register as Doctor</CardTitle>
+              <CardDescription>
+                {createdUserId
+                  ? "Complete the doctor profile for the newly created user"
+                  : "Select an existing doctor user and complete their professional profile"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!createdUserId && (
+                <div>
+                  <Label htmlFor="doctorUser">Select Doctor User *</Label>
+                  <Select
+                    value={selectedUser?.User_id.toString() || ""}
+                    onValueChange={(value) => {
+                      console.log("🔄 User selection changed to:", value);
+                      const user = availableUsers.find(
+                        (u) => u.User_id.toString() === value
+                      );
+                      console.log("🔄 Found user:", user);
+                      setSelectedUser(user || null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a doctor user account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableUsers.length === 0 ? (
+                        <SelectItem value="no-users" disabled>
+                          No available doctor users found - please create a user
+                          first in Step 1
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                {availableUsers.length === 0 && (
-                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      💡 <strong>No available doctor users found.</strong>{" "}
-                      Please go back to Step 1 to create a new user account
-                      first, or ensure there are existing Doctor-type users
-                      without doctor profiles.
-                    </p>
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setRegistrationStep(1)}
-                        className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
-                      >
-                        ← Go Back to Step 1
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setRegistrationStep(1);
-                          setNewUser((prev) => ({
-                            ...prev,
-                            User_Type: "Doctor",
-                          }));
-                        }}
-                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                      >
-                        🏥 Create Doctor User
-                      </Button>
+                      ) : (
+                        availableUsers.map((user) => (
+                          <SelectItem
+                            key={user.User_id}
+                            value={user.User_id.toString()}
+                          >
+                            {user.First_Name} {user.Last_Name} ({user.Email})
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {availableUsers.length === 0 && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        💡 <strong>No available doctor users found.</strong>{" "}
+                        Please go back to Step 1 to create a new user account
+                        first, or ensure there are existing Doctor-type users
+                        without doctor profiles.
+                      </p>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRegistrationStep(1)}
+                          className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                        >
+                          ← Go Back to Step 1
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setRegistrationStep(1);
+                            setNewUser((prev) => ({
+                              ...prev,
+                              User_Type: "Doctor",
+                            }));
+                          }}
+                          className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                        >
+                          🏥 Create Doctor User
+                        </Button>
+                      </div>
+                      <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs">
+                        <strong>Debug Info:</strong>
+                        <br />• Total users: {users.length}
+                        <br />• Doctor-type users:{" "}
+                        {users.filter((u) => u.User_Type === "Doctor").length}
+                        <br />• Existing doctor profiles: {doctors.length}
+                        <br />• Available for registration:{" "}
+                        {availableUsers.length}
+                      </div>
                     </div>
-                    <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs">
-                      <strong>Debug Info:</strong>
-                      <br />• Total users: {users.length}
-                      <br />• Doctor-type users:{" "}
+                  )}
+                </div>
+              )}
+
+              {(selectedUser || createdUserId) && (
+                <>
+                  {/* Debug section to show current state */}
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800 font-medium">
+                      ✅ Ready to complete doctor registration
+                    </p>
+                    <div className="text-xs text-green-700 mt-1">
+                      {createdUserId && (
+                        <p>• Using newly created user (ID: {createdUserId})</p>
+                      )}
+                      {selectedUser && (
+                        <p>
+                          • Selected user: {selectedUser.First_Name}{" "}
+                          {selectedUser.Last_Name} ({selectedUser.Email})
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="licenseNumber">License Number *</Label>
+                      <Input
+                        id="licenseNumber"
+                        value={newDoctor.License_number}
+                        onChange={(e) =>
+                          setNewDoctor((prev) => ({
+                            ...prev,
+                            License_number: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter medical license number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="specialization">Specialization *</Label>
+                      <Input
+                        id="specialization"
+                        value={newDoctor.Specialization}
+                        onChange={(e) =>
+                          setNewDoctor((prev) => ({
+                            ...prev,
+                            Specialization: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g., Cardiology, Dermatology"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 mb-4">
+                    <div>
+                      <Label htmlFor="doctorPassword">Password *</Label>
+                      <Input
+                        id="doctorPassword"
+                        type="password"
+                        value={newDoctor.Password}
+                        onChange={(e) =>
+                          setNewDoctor((prev) => ({
+                            ...prev,
+                            Password: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter password for doctor login"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        This password will be used by the doctor to log into
+                        their account
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="qualification">Qualification *</Label>
+                      <Input
+                        id="qualification"
+                        value={newDoctor.Qualification}
+                        onChange={(e) =>
+                          setNewDoctor((prev) => ({
+                            ...prev,
+                            Qualification: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g., MBBS, MD"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="experience">Years of Experience *</Label>
+                      <Input
+                        id="experience"
+                        type="number"
+                        value={newDoctor.Experience_Years}
+                        onChange={(e) =>
+                          setNewDoctor((prev) => ({
+                            ...prev,
+                            Experience_Years: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        placeholder="Years of practice"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="department">Department</Label>
+                    <Input
+                      id="department"
+                      value={newDoctor.Department}
+                      onChange={(e) =>
+                        setNewDoctor((prev) => ({
+                          ...prev,
+                          Department: e.target.value,
+                        }))
+                      }
+                      placeholder="Hospital department"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={newDoctor.Bio}
+                      onChange={(e) =>
+                        setNewDoctor((prev) => ({
+                          ...prev,
+                          Bio: e.target.value,
+                        }))
+                      }
+                      placeholder="Professional bio and achievements"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="languages">Languages Spoken</Label>
+                    <Input
+                      id="languages"
+                      value={newDoctor.Languages_Spoken}
+                      onChange={(e) =>
+                        setNewDoctor((prev) => ({
+                          ...prev,
+                          Languages_Spoken: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g., English, Spanish, French"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="onlineAvailable"
+                      checked={newDoctor.Is_Available_Online}
+                      onChange={(e) =>
+                        setNewDoctor((prev) => ({
+                          ...prev,
+                          Is_Available_Online: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 accent-purple-600"
+                    />
+                    <Label htmlFor="onlineAvailable">
+                      Available for online consultations
+                    </Label>
+                  </div>
+
+                  <Button
+                    onClick={handleRegisterDoctor}
+                    className="w-full"
+                    // disabled={
+                    //   !newDoctor.License_number ||
+                    //   !newDoctor.Specialization ||
+                    //   !newDoctor.Password
+                    // }
+                  >
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    Complete Doctor Registration
+                  </Button>
+                </>
+              )}
+
+              {!createdUserId && !selectedUser && availableUsers.length > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">
+                    👆 Please select a doctor user from the dropdown above to
+                    continue with the registration.
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    The Complete Doctor Registration button will appear once you
+                    select a user.
+                  </p>
+                  <div className="mt-2 p-2 bg-white border border-blue-300 rounded text-xs">
+                    <strong>Current State:</strong>
+                    <br />• Created User ID: {createdUserId || "None"}
+                    <br />• Selected User:{" "}
+                    {selectedUser && (selectedUser as User).First_Name
+                      ? `${(selectedUser as User).First_Name} ${(selectedUser as User).Last_Name}`
+                      : "None"}
+                    <br />• Available Users: {availableUsers.length}
+                    <br />• Registration Step: {registrationStep}
+                  </div>
+                </div>
+              )}
+
+              {!createdUserId &&
+                !selectedUser &&
+                availableUsers.length === 0 && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800 font-medium">
+                      ⚠️ No available doctor users found for registration.
+                    </p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      All doctor-type users already have doctor profiles, or no
+                      doctor users exist.
+                    </p>
+                    <div className="mt-2 p-2 bg-white border border-yellow-300 rounded text-xs">
+                      <strong>Current State:</strong>
+                      <br />• Total Users: {users.length}
+                      <br />• Doctor-type Users:{" "}
                       {users.filter((u) => u.User_Type === "Doctor").length}
-                      <br />• Existing doctor profiles: {doctors.length}
-                      <br />• Available for registration:{" "}
+                      <br />• Existing Doctor Profiles: {doctors.length}
+                      <br />• Available for Registration:{" "}
                       {availableUsers.length}
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRegistrationStep(1)}
+                      className="mt-2 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                    >
+                      ← Go Back to Step 1 to Create New User
+                    </Button>
                   </div>
                 )}
-              </div>
-            )}
 
-            {(selectedUser || createdUserId) && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="licenseNumber">License Number *</Label>
-                    <Input
-                      id="licenseNumber"
-                      value={newDoctor.License_number}
-                      onChange={(e) =>
-                        setNewDoctor((prev) => ({
-                          ...prev,
-                          License_number: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter medical license number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="specialization">Specialization *</Label>
-                    <Input
-                      id="specialization"
-                      value={newDoctor.Specialization}
-                      onChange={(e) =>
-                        setNewDoctor((prev) => ({
-                          ...prev,
-                          Specialization: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g., Cardiology, Dermatology"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 mb-4">
-                  <div>
-                    <Label htmlFor="doctorPassword">Password *</Label>
-                    <Input
-                      id="doctorPassword"
-                      type="password"
-                      value={newDoctor.Password}
-                      onChange={(e) =>
-                        setNewDoctor((prev) => ({
-                          ...prev,
-                          Password: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter password for doctor login"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      This password will be used by the doctor to log into their
-                      account
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="qualification">Qualification *</Label>
-                    <Input
-                      id="qualification"
-                      value={newDoctor.Qualification}
-                      onChange={(e) =>
-                        setNewDoctor((prev) => ({
-                          ...prev,
-                          Qualification: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g., MBBS, MD"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="experience">Years of Experience *</Label>
-                    <Input
-                      id="experience"
-                      type="number"
-                      value={newDoctor.Experience_Years}
-                      onChange={(e) =>
-                        setNewDoctor((prev) => ({
-                          ...prev,
-                          Experience_Years: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      placeholder="Years of practice"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    value={newDoctor.Department}
-                    onChange={(e) =>
-                      setNewDoctor((prev) => ({
-                        ...prev,
-                        Department: e.target.value,
-                      }))
-                    }
-                    placeholder="Hospital department"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={newDoctor.Bio}
-                    onChange={(e) =>
-                      setNewDoctor((prev) => ({
-                        ...prev,
-                        Bio: e.target.value,
-                      }))
-                    }
-                    placeholder="Professional bio and achievements"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="languages">Languages Spoken</Label>
-                  <Input
-                    id="languages"
-                    value={newDoctor.Languages_Spoken}
-                    onChange={(e) =>
-                      setNewDoctor((prev) => ({
-                        ...prev,
-                        Languages_Spoken: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., English, Spanish, French"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="onlineAvailable"
-                    checked={newDoctor.Is_Available_Online}
-                    onChange={(e) =>
-                      setNewDoctor((prev) => ({
-                        ...prev,
-                        Is_Available_Online: e.target.checked,
-                      }))
-                    }
-                    className="h-4 w-4 accent-purple-600"
-                  />
-                  <Label htmlFor="onlineAvailable">
-                    Available for online consultations
-                  </Label>
-                </div>
-
-                <Button
-                  onClick={handleRegisterDoctor}
-                  className="w-full"
-                  disabled={
-                    !newDoctor.License_number ||
-                    !newDoctor.Specialization ||
-                    !newDoctor.Password
-                  }
-                >
-                  <UserCheck className="w-4 h-4 mr-2" />
-                  Complete Doctor Registration
-                </Button>
-              </>
-            )}
-
-            {!createdUserId && !selectedUser && availableUsers.length > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium">
-                  👆 Please select a doctor user from the dropdown above to
-                  continue with the registration.
+              {/* Debug: Always visible button for testing */}
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-300 rounded-lg">
+                <p className="text-sm text-gray-800 font-medium mb-2">
+                  🔧 Debug Section (Always Visible)
                 </p>
-                <p className="text-sm text-blue-700 mt-1">
-                  The Complete Doctor Registration button will appear once you
-                  select a user.
-                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                  <div>Created User ID: {createdUserId || "None"}</div>
+                  <div>Selected User: {selectedUser?.First_Name || "None"}</div>
+                  <div>Available Users: {availableUsers.length}</div>
+                  <div>Registration Step: {registrationStep}</div>
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => {
+                      // Create a temporary mock user for testing
+                      const mockUser = {
+                        User_id: 999,
+                        First_Name: "Test",
+                        Last_Name: "Doctor",
+                        Email: "test.doctor@example.com",
+                        Phone_Number: "1234567890",
+                        Date_of_Birth: "1990-01-01",
+                        Gender: "Male" as "Male" | "Female" | "Other",
+                        User_Type: "Doctor" as "Doctor" | "Pharmacist",
+                        Account_Status: "Active" as "Active",
+                        Password: "",
+                        Address: "",
+                        Created_at: new Date(), 
+                        Created_At: new Date(),
+                        Updated_At: new Date(),
+                      };
+                      setSelectedUser(mockUser);
+                      console.log(
+                        "🔧 Mock user selected for testing:",
+                        mockUser
+                      );
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    size="sm"
+                  >
+                    🔧 Select Mock User for Testing
+                  </Button>
+                  <Button
+                    onClick={handleRegisterDoctor}
+                    className="w-full bg-gray-600 hover:bg-gray-700"
+                    size="sm"
+                  >
+                    🔧 Force Doctor Registration (With Current Data)
+                  </Button>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
 
   const renderPharmacistRegistrationForm = () => (
     <div className="space-y-6">
@@ -2121,15 +2268,15 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen overflow-auto">
       {/* Background blur overlay when sheet is open */}
       {isRegistrationSheetOpen && (
         <div className="fixed inset-0 backdrop-blur-sm bg-black/20 z-20 transition-all duration-300" />
       )}
 
-      <div className="relative z-10 space-y-6">
+      <div className="relative z-10 space-y-6 p-6 max-w-full">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground">
@@ -2138,7 +2285,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Debug Section */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={fetchAllData} variant="outline" disabled={loading}>
               {loading ? "Loading..." : "🔄 Refresh Data"}
             </Button>
@@ -2158,8 +2305,8 @@ const AdminDashboard = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b">
-          <nav className="flex space-x-8" aria-label="Tabs">
+        <div className="border-b overflow-x-auto">
+          <nav className="flex space-x-8 min-w-max" aria-label="Tabs">
             {[
               { id: "overview", label: "Overview", icon: BarChart3 },
               { id: "users", label: "Users", icon: Users },
@@ -2188,7 +2335,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content */}
-        {renderContent()}
+        <div className="pb-8">{renderContent()}</div>
       </div>
     </div>
   );
