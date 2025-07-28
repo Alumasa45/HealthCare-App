@@ -1501,58 +1501,6 @@ const AdminDashboard = () => {
                     </Button>
                   </div>
                 )}
-
-              {/* Debug: Always visible button for testing */}
-              <div className="mt-4 p-4 bg-gray-50 border border-gray-300 rounded-lg">
-                <p className="text-sm text-gray-800 font-medium mb-2">
-                  🔧 Debug Section (Always Visible)
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                  <div>Created User ID: {createdUserId || "None"}</div>
-                  <div>Selected User: {selectedUser?.First_Name || "None"}</div>
-                  <div>Available Users: {availableUsers.length}</div>
-                  <div>Registration Step: {registrationStep}</div>
-                </div>
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => {
-                      // Create a temporary mock user for testing
-                      const mockUser = {
-                        User_id: 999,
-                        First_Name: "Test",
-                        Last_Name: "Doctor",
-                        Email: "test.doctor@example.com",
-                        Phone_Number: "1234567890",
-                        Date_of_Birth: "1990-01-01",
-                        Gender: "Male" as "Male" | "Female" | "Other",
-                        User_Type: "Doctor" as "Doctor" | "Pharmacist",
-                        Account_Status: "Active" as "Active",
-                        Password: "",
-                        Address: "",
-                        Created_at: new Date(), 
-                        Created_At: new Date(),
-                        Updated_At: new Date(),
-                      };
-                      setSelectedUser(mockUser);
-                      console.log(
-                        "🔧 Mock user selected for testing:",
-                        mockUser
-                      );
-                    }}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                    size="sm"
-                  >
-                    🔧 Select Mock User for Testing
-                  </Button>
-                  <Button
-                    onClick={handleRegisterDoctor}
-                    className="w-full bg-gray-600 hover:bg-gray-700"
-                    size="sm"
-                  >
-                    🔧 Force Doctor Registration (With Current Data)
-                  </Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         )}
