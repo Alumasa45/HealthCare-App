@@ -4,10 +4,6 @@ import { ApiProperty } from "@nestjs/swagger";
 
 
 export class CreateAddressDto {
-    // @IsNotEmpty()
-    // @IsNumber()
-    // @ApiProperty({ description: 'Unique address identification number.'})
-    // Address_id: number;
 
     @IsNotEmpty()
     @IsNumber()
