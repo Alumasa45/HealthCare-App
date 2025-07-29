@@ -172,6 +172,7 @@ export const CreatePrescriptionModal: React.FC<
       setLoading(true);
 
       const prescriptionData = {
+        Prescription_id: 0, // Placeholder, backend should ignore or auto-generate
         Patient_id: parseInt(formData.Patient_id),
         Doctor_id: Doctor_id,
         Appointment_id: formData.Appointment_id
