@@ -162,7 +162,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     fetchConversations();
-  }, [user]); //dependency: user.
+  }, [user]); //dependency - user.
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -224,7 +224,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
 
-    // Clear messages before switching to prevent showing old messages
+    // Clear messages before switching to prevent showing old messages.
     setMessages([]);
     setError(null);
     setSelectedChatId(chatId);

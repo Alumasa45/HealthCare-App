@@ -174,7 +174,7 @@ const UniversalLoginForm = () => {
           <div>
             <label
               htmlFor={field.name}
-              className="block text-sm font-medium text-purple-600 mb-1"
+              className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
             >
               Email Address
             </label>
@@ -185,11 +185,11 @@ const UniversalLoginForm = () => {
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                 field.state.meta.errors.length > 0
                   ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300"
-              } bg-transparent text-purple-900 dark:text-white`}
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
               placeholder="your@email.com"
             />
             {field.state.meta.errors.length > 0 && (
@@ -215,7 +215,7 @@ const UniversalLoginForm = () => {
           <div>
             <label
               htmlFor={field.name}
-              className="block text-sm font-medium text-purple-600 mb-1"
+              className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
             >
               Password
             </label>
@@ -226,11 +226,11 @@ const UniversalLoginForm = () => {
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                 field.state.meta.errors.length > 0
                   ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300"
-              } bg-transparent text-purple-900 dark:text-white`}
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
               placeholder="Enter your password"
             />
             {field.state.meta.errors.length > 0 && (
@@ -283,8 +283,8 @@ const RoleTab: React.FC<RoleTabProps> = ({
     onClick={onClick}
     className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 min-w-[100px] ${
       isSelected
-        ? "border-purple-500 bg-purple-50 text-purple-700"
-        : "border-gray-300 hover:border-purple-300 hover:bg-purple-25 text-gray-600"
+        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
+        : "border-gray-300 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-purple-25 dark:hover:bg-purple-900/10 text-gray-600 dark:text-gray-300"
     }`}
   >
     <div className="mb-2">{icon}</div>
@@ -560,10 +560,7 @@ function SignUpForm() {
     >
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-      <div
-        className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md relative z-10"
-        style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}
-      >
+      <div className="w-full max-w-md p-6 bg-white/95 dark:bg-gray-800/95 rounded-lg shadow-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full mb-4">
@@ -581,14 +578,14 @@ function SignUpForm() {
 
         {/* Form Type Toggle */}
         <div className="mb-6 flex justify-center">
-          <div className="inline-flex rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-700 p-1">
+          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-1">
             <button
               type="button"
               onClick={() => setFormType("signup")}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 formType === "signup"
                   ? "bg-purple-600 text-white shadow-sm"
-                  : "text-gray-700 dark:text-gray-300 hover:text-purple-600"
+                  : "text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
               }`}
             >
               Sign Up
@@ -599,7 +596,7 @@ function SignUpForm() {
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 formType === "login"
                   ? "bg-purple-600 text-white shadow-sm"
-                  : "text-gray-700 dark:text-gray-300 hover:text-purple-600"
+                  : "text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
               }`}
             >
               Sign In
@@ -708,7 +705,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           First Name
                         </label>
@@ -719,11 +716,11 @@ function SignUpForm() {
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter your first name..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -749,7 +746,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Last Name
                         </label>
@@ -760,11 +757,11 @@ function SignUpForm() {
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter your last name..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -790,7 +787,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Email
                         </label>
@@ -803,11 +800,11 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="patient@example.com"
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -833,7 +830,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Password
                         </label>
@@ -846,11 +843,11 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter a secure password..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -889,7 +886,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Phone Number
                         </label>
@@ -902,11 +899,11 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter your phone number..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -932,7 +929,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Date of Birth
                         </label>
@@ -952,11 +949,11 @@ function SignUpForm() {
                               : new Date();
                             field.handleChange(dateValue);
                           }}
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                         />
                         {field.state.meta.errors.length > 0 && (
                           <p className="mt-1 text-sm text-red-500">
@@ -981,7 +978,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Gender
                         </label>
@@ -995,13 +992,18 @@ function SignUpForm() {
                               event.target.value as "Male" | "Female" | "Other"
                             )
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                         >
-                          <option value="">Select Gender</option>
+                          <option
+                            value=""
+                            className="text-gray-500 dark:text-gray-400"
+                          >
+                            Select Gender
+                          </option>
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
                           <option value="Other">Other</option>
@@ -1049,7 +1051,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Emergency Contact Name
                         </label>
@@ -1062,11 +1064,11 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter emergency contact name..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -1098,7 +1100,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Emergency Contact Phone
                         </label>
@@ -1111,11 +1113,11 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                           placeholder="Enter emergency contact phone..."
                         />
                         {field.state.meta.errors.length > 0 && (
@@ -1147,7 +1149,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Relationship to Emergency Contact
                         </label>
@@ -1159,13 +1161,18 @@ function SignUpForm() {
                           onChange={(event) =>
                             field.handleChange(event.target.value)
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                         >
-                          <option value="">Select Relationship</option>
+                          <option
+                            value=""
+                            className="text-gray-500 dark:text-gray-400"
+                          >
+                            Select Relationship
+                          </option>
                           <option value="Parent">Parent</option>
                           <option value="Spouse">Spouse</option>
                           <option value="Sibling">Sibling</option>
@@ -1197,7 +1204,7 @@ function SignUpForm() {
                       <div>
                         <label
                           htmlFor={field.name}
-                          className="block text-sm font-medium text-purple-600 mb-1"
+                          className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                         >
                           Blood Group
                         </label>
@@ -1219,13 +1226,18 @@ function SignUpForm() {
                                 | "O-"
                             )
                           }
-                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                             field.state.meta.errors.length > 0
                               ? "border-red-500 focus:ring-red-500"
-                              : "border-gray-300"
-                          } bg-transparent text-purple-900 dark:text-white`}
+                              : "border-gray-300 dark:border-gray-600"
+                          } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                         >
-                          <option value="">Select Blood Group</option>
+                          <option
+                            value=""
+                            className="text-gray-500 dark:text-gray-400"
+                          >
+                            Select Blood Group
+                          </option>
                           <option value="A+">A+</option>
                           <option value="A-">A-</option>
                           <option value="B+">B+</option>
@@ -1260,7 +1272,7 @@ function SignUpForm() {
                         <div>
                           <label
                             htmlFor={field.name}
-                            className="block text-sm font-medium text-purple-600 mb-1"
+                            className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                           >
                             Height (cm)
                           </label>
@@ -1273,11 +1285,11 @@ function SignUpForm() {
                             onChange={(event) =>
                               field.handleChange(Number(event.target.value))
                             }
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                               field.state.meta.errors.length > 0
                                 ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300"
-                            } bg-transparent text-purple-900 dark:text-white`}
+                                : "border-gray-300 dark:border-gray-600"
+                            } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                             placeholder="170"
                             min="1"
                             max="300"
@@ -1305,7 +1317,7 @@ function SignUpForm() {
                         <div>
                           <label
                             htmlFor={field.name}
-                            className="block text-sm font-medium text-purple-600 mb-1"
+                            className="block text-sm font-medium text-purple-600 dark:text-purple-300 mb-1"
                           >
                             Weight (kg)
                           </label>
@@ -1318,11 +1330,11 @@ function SignUpForm() {
                             onChange={(event) =>
                               field.handleChange(Number(event.target.value))
                             }
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 ${
                               field.state.meta.errors.length > 0
                                 ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300"
-                            } bg-transparent text-purple-900 dark:text-white`}
+                                : "border-gray-300 dark:border-gray-600"
+                            } bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400`}
                             placeholder="70"
                             min="1"
                             max="500"
@@ -1349,7 +1361,7 @@ function SignUpForm() {
                       onClick={() =>
                         setRegistrationStep((registrationStep - 1) as 1 | 2 | 3)
                       }
-                      className="flex-1 py-2 px-4 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                      className="flex-1 py-2 px-4 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white rounded-md transition-colors"
                     >
                       Previous
                     </button>
@@ -1469,7 +1481,7 @@ function SignUpForm() {
                       handleFormTypeToggle();
                     }
                   }}
-                  className="text-purple-600 hover:underline bg-transparent border-none cursor-pointer"
+                  className="text-purple-600 dark:text-purple-400 hover:underline bg-transparent border-none cursor-pointer"
                 >
                   {registrationStep === 2 ? "Previous Step" : "Sign In"}
                 </button>

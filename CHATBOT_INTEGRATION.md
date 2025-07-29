@@ -23,14 +23,6 @@ This guide covers the integration of the Coco AI assistant chatbot into the heal
   - TypeScript support
   - Async mutation handling
 
-#### useAskNuru (`/src/hooks/useAskNuru.ts`)
-
-- **Purpose**: Alternative hook implementation with extended response data
-- **Features**:
-  - Returns original request data along with response
-  - Comprehensive error handling
-  - Success/error callbacks
-
 ### 3. UI Components
 
 #### CocoAssistant (`/src/components/CocoAssistant.tsx`)

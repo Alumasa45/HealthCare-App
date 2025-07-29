@@ -15,7 +15,7 @@
 
 **Files Modified**:
 
-- `frontend/src/contexts/CartContext.tsx`
+- `frontend/src/contexts/CartContext.tsx` 
 
 ### 2. **Pharmacy Creation Form Validation Error** ✅ FIXED
 

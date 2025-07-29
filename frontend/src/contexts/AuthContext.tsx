@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const login = (token: string, userData: User) => {
-    // Clean the token to remove any extra whitespace or characters
+    // Clean the token to remove any extra whitespace or characters.
     const cleanToken = token.trim();
     console.log("🔍 Login token debug:");
     console.log("- Original token length:", token.length);

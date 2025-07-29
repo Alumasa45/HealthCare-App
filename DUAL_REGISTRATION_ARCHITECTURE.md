@@ -20,7 +20,7 @@ This document explains the two-step registration process implemented in the heal
 **Step 1: User Account Creation**
 
 - Patient visits signup page
-- Creates basic user account (users table)
+- Creates basic user account (users table) 
 - User_Type = "Patient"
 
 **Step 2: Patient Profile Creation**
