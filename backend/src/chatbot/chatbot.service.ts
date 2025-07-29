@@ -362,7 +362,8 @@ export class ChatbotService {
         .slice(0, 5)
         .map((doctor, index) => {
           const name =
-            `Dr. ${doctor.user?.First_Name || ''} ${doctor.user?.Last_Name || ''}`.trim();
+            `Dr. ${doctor.user?.First_Name || ''} ${doctor.user?.Last_Name || ''}`.trim() ||
+            'Name not available';
           const specialty = doctor.Specialization || 'General Practice';
           return `${index + 1}. ${name} - ${specialty}`;
         })

@@ -11,6 +11,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe({}));
 
+  // Set global API prefix to match frontend expectations
+  app.setGlobalPrefix('api');
+
   app.use('/static', express.static(join(__dirname, '..', 'public')));
 
   const configService = app.get(ConfigService);

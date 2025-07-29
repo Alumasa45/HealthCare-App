@@ -72,9 +72,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   useEffect(() => {
     if (!user?.User_id) return;
 
+    // Determine WebSocket URL based on API client configuration
+    const wsBaseUrl = "https://healthcare-app-60pj.onrender.com"
+      .replace("https://", "wss://")
+      .replace("http://", "ws://");
+
     // Set up WebSocket connection for real-time notifications
     const ws = new WebSocket(
-      `ws://localhost:3001/notifications?userId=${user.User_id}`
+      `${wsBaseUrl}/notifications?userId=${user.User_id}`
     );
 
     ws.onopen = () => {

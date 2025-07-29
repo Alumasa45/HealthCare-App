@@ -9,14 +9,33 @@ export class ChatbotController {
 
   @Post('/Coco')
   async askCoco(@Body() body: { message: string; role: 'doctor' | 'patient' | 'pharmacist' | 'admin' }) {
-    const { message, role } = body;
+    try {
+      const { message, role } = body;
 
-    const reply = await this.chatbotService.askCoco(message, role);
-    return {
-      success: true,
-      assistant: 'Coco',
-      data: { reply },
-      timestamp: new Date().toISOString(),
-    };
+      if (!message || !role) {
+        return {
+          success: false,
+          error: 'Message and role are required',
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      const reply = await this.chatbotService.askCoco(message, role);
+      return {
+        success: true,
+        assistant: 'Coco',
+        data: { reply },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error('Chatbot controller error:', error);
+      return {
+        success: false,
+        error: 'An error occurred while processing your request',
+        details: error.message,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
   }
 }

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { appointmentApi } from "@/api/appointments";
 import { patientApi } from "@/api/patients";
+import { prescriptionapi } from "@/api/prescriptions";
 import { toast } from "sonner";
 import type { Appointment } from "@/api/interfaces/appointment";
 
@@ -185,19 +186,7 @@ export const CreatePrescriptionModal: React.FC<
         Notes: formData.Notes,
       };
 
-      const response = await fetch("/api/prescriptions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(prescriptionData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create prescription");
-      }
-
-      const result = await response.json();
+      const result = await prescriptionapi.create(prescriptionData);
 
       toast.success("Prescription created and sent to patient successfully!");
       onSuccess?.();
