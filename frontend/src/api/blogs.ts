@@ -1,25 +1,31 @@
 import apiClient from "./apiClient";
 import type { HealthBlogProps } from "./interfaces/blog";
 
+export interface CreateBlogDto {
+    Title: string;
+    Content: string;
+    Image_url?: string;
+    Author: string;
+}
 
 export const blogsApi = {
-    create: async (): Promise<HealthBlogProps[]> => {
+    create: async (blogData: CreateBlogDto): Promise<HealthBlogProps> => {
         try {
-        const response = await apiClient.get<HealthBlogProps[]>("/blogs");
-        return response.data;
+            const response = await apiClient.post<HealthBlogProps>("/blogs", blogData);
+            return response.data;
         } catch (error) {
-        console.error("Error fetching blogs:", error);
-        throw new Error("Failed to fetch blogs");
+            console.error("Error creating blog:", error);
+            throw new Error("Failed to create blog");
         }
     },
 
     findOne: async (Blog_id: number): Promise<HealthBlogProps> => {
         try {
-        const response = await apiClient.get<HealthBlogProps>(`/blogs/${Blog_id}`);
-        return response.data;
+            const response = await apiClient.get<HealthBlogProps>(`/blogs/${Blog_id}`);
+            return response.data;
         } catch (error) {
-        console.error(`Error fetching blog with id ${Blog_id}:`, error);
-        throw new Error("Failed to fetch blog");
+            console.error(`Error fetching blog with id ${Blog_id}:`, error);
+            throw new Error("Failed to fetch blog");
         }
     },
 
@@ -51,6 +57,6 @@ export const blogsApi = {
             throw new Error("Failed to delete blog");
         }
     },
-
-
 };
+            throw new Error("Failed to delete blog");
+     

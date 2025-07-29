@@ -162,7 +162,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     fetchConversations();
-  }, [user, selectedChatId]);
+  }, [user]); //dependency: user.
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -205,7 +205,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         console.error("Error fetching messages:", error);
         setError("Failed to load messages");
-        setMessages([]); // Set empty array instead of keeping old messages
+        setMessages([]); // make empty array instead of keeping old messages.
       } finally {
         setLoading(false);
       }
@@ -218,12 +218,15 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     console.log("🔄 Selecting chat:", chatId);
     console.log("🔄 Current selected chat:", selectedChatId);
 
-    // Clear messages before switching to prevent showing old messages
-    if (chatId !== selectedChatId) {
-      setMessages([]);
-      setError(null);
+    // Prevent selecting the same chat multiple times
+    if (chatId === selectedChatId) {
+      console.log("⚠️ Same chat already selected, skipping");
+      return;
     }
 
+    // Clear messages before switching to prevent showing old messages
+    setMessages([]);
+    setError(null);
     setSelectedChatId(chatId);
   };
 

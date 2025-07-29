@@ -7,4 +7,6 @@ export interface HealthBlogProps {
     Image_url?: string;
     Author: string;
     Created_at: Date;
+    Tags: string[];
+    Image?: string | null; 
 }

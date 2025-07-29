@@ -19,6 +19,7 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
   const [users, setUsers] = useState<UserInterface[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserInterface[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -77,10 +78,20 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
     }
   }, [searchTerm, users]);
 
-  const handleSelectUser = (user: UserInterface) => {
-    const fullName = `${user.First_Name} ${user.Last_Name}`;
-    onCreateConversation(user.User_id, fullName);
-    onClose();
+  const handleSelectUser = async (user: UserInterface) => {
+    if (isCreating) return; // Prevent multiple clicks
+
+    setIsCreating(true);
+    try {
+      const fullName = `${user.First_Name} ${user.Last_Name}`;
+      await onCreateConversation(user.User_id, fullName);
+      onClose();
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      alert("Failed to create conversation. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -124,7 +135,9 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
               filteredUsers.map((user) => (
                 <div
                   key={user.User_id}
-                  className="flex items-center p-3 hover:bg-gray-50 rounded-md cursor-pointer"
+                  className={`flex items-center p-3 hover:bg-gray-50 rounded-md cursor-pointer ${
+                    isCreating ? "opacity-50 pointer-events-none" : ""
+                  }`}
                   onClick={() => handleSelectUser(user)}
                 >
                   <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
@@ -150,6 +163,11 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
                       </span>
                     </div>
                   </div>
+                  {isCreating && (
+                    <div className="ml-auto">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
                 </div>
               ))
             )}

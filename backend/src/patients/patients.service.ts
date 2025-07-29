@@ -40,7 +40,9 @@ export class PatientsService {
 
   async findAll(): Promise<Patient[]> {
     try {
-      const patients = await this.patientRepository.find();
+      const patients = await this.patientRepository.find({
+        relations: ['user'], // Include user relations
+      });
       this.logger.log(`Retrieved ${patients.length} patients.`);
       return patients;
     } catch (error) {

@@ -35,7 +35,7 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
   isOpen,
   onClose,
   onMedicineAdded,
-  pharmacyId = 1, 
+  pharmacyId = 1,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"medicine" | "inventory">("medicine");
@@ -329,6 +329,25 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
               />
             </div>
 
+            <div>
+              <Label htmlFor="image_url">Medicine Image URL</Label>
+              <Input
+                id="image_url"
+                type="url"
+                value={medicineData.Image_url || ""}
+                onChange={(e) =>
+                  setMedicineData((prev) => ({
+                    ...prev,
+                    Image_url: e.target.value,
+                  }))
+                }
+                placeholder="https://example.com/medicine-image.jpg"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Provide a direct link to the medicine image
+              </p>
+            </div>
+
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
@@ -369,8 +388,9 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
                   id="expiry_date"
                   type="date"
                   value={
-                  typeof inventoryData.Expiry_Date === "string" ? inventoryData.Expiry_Date
-                    : inventoryData.Expiry_Date.toISOString().split("T")[0]
+                    typeof inventoryData.Expiry_Date === "string"
+                      ? inventoryData.Expiry_Date
+                      : inventoryData.Expiry_Date.toISOString().split("T")[0]
                   }
                   onChange={(e) =>
                     setInventoryData((prev) => ({

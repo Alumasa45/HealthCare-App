@@ -142,46 +142,57 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     };
   }, [user?.User_id]);
 
-  // Simulate notifications for demonstration (remove in production)
+  // Fetch real notifications from backend
   useEffect(() => {
-    if (!user?.User_id || user.User_Type !== "Doctor") return;
+    if (!user?.User_id) return;
 
-    const simulateNotifications = () => {
-      const sampleNotifications = [
-        {
-          title: "New Appointment",
-          message:
-            "Patient John Doe has booked an appointment for tomorrow at 2:00 PM",
-          type: "info" as const,
-        },
-        {
-          title: "Appointment Reminder",
-          message: "You have an appointment with Jane Smith in 30 minutes",
-          type: "warning" as const,
-        },
-        {
-          title: "Lab Results Available",
-          message: "Lab results for patient Mike Johnson are now available",
-          type: "success" as const,
-        },
-      ];
+    const fetchRealNotifications = async () => {
+      try {
+        // Import the notification API
+        const { notificationApi } = await import("../api/notifications");
 
-      const interval = setInterval(() => {
-        const randomNotification =
-          sampleNotifications[
-            Math.floor(Math.random() * sampleNotifications.length)
-          ];
-        addNotification(randomNotification);
-      }, 30000);
+        // Fetch user's actual notifications from backend
+        const realNotifications = await notificationApi.findByUserId(
+          user.User_id
+        );
 
-      return () => clearInterval(interval);
+        // Transform backend notifications to local format
+        const transformedNotifications = realNotifications.map((notif) => ({
+          id: notif.Notification_id.toString(),
+          title: notif.Title,
+          message: notif.Message,
+          type:
+            notif.Type === "general"
+              ? ("info" as const)
+              : notif.Type === "prescription"
+              ? ("success" as const)
+              : notif.Type === "appointment"
+              ? ("info" as const)
+              : notif.Type === "billing"
+              ? ("warning" as const)
+              : ("info" as const),
+          timestamp: new Date(notif.Created_at),
+          read: notif.Status === "read",
+          userId: notif.User_id,
+        }));
+
+        setNotifications(transformedNotifications);
+      } catch (error) {
+        console.error("Error fetching real notifications:", error);
+        // Fallback to empty array if API fails
+        setNotifications([]);
+      }
     };
 
-    const cleanup = simulateNotifications();
-    return cleanup;
-  }, [user?.User_id, user?.User_Type]);
+    fetchRealNotifications();
 
-  const addNotification = (
+    // Set up periodic refresh for real notifications
+    const interval = setInterval(fetchRealNotifications, 60000); // Refresh every minute
+
+    return () => clearInterval(interval);
+  }, [user?.User_id]);
+
+  const addNotification = async (
     notification: Omit<Notification, "id" | "timestamp" | "read">
   ) => {
     const newNotification: Notification = {
@@ -191,17 +202,67 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       read: false,
     };
 
+    // Add to local state immediately for responsiveness
     setNotifications((prev) => [newNotification, ...prev]);
+
+    // Try to sync with backend
+    try {
+      if (user?.User_id) {
+        const { notificationApi } = await import("../api/notifications");
+        await notificationApi.create({
+          User_id: user.User_id,
+          Title: notification.title,
+          Message: notification.message,
+          Type:
+            notification.type === "info"
+              ? "general"
+              : notification.type === "success"
+              ? "prescription"
+              : notification.type === "warning"
+              ? "appointment"
+              : "general",
+          Status: "unread",
+        });
+      }
+    } catch (error) {
+      console.error("Error syncing notification with backend:", error);
+      // Keep local notification even if backend sync fails
+    }
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Update local state immediately for responsiveness
     setNotifications((prev) =>
       prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
     );
+
+    // Try to sync with backend
+    try {
+      const { notificationApi } = await import("../api/notifications");
+      const numericId = parseInt(id);
+      if (!isNaN(numericId)) {
+        await notificationApi.markAsRead(numericId);
+      }
+    } catch (error) {
+      console.error("Error syncing read status with backend:", error);
+      // Keep local change even if backend sync fails
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    // Update local state immediately for responsiveness
     setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+
+    // Try to sync with backend
+    try {
+      if (user?.User_id) {
+        const { notificationApi } = await import("../api/notifications");
+        await notificationApi.markAllAsRead(user.User_id);
+      }
+    } catch (error) {
+      console.error("Error syncing mark all read with backend:", error);
+      // Keep local changes even if backend sync fails
+    }
   };
 
   const removeNotification = (id: string) => {

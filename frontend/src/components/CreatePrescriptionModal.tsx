@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { appointmentApi } from "@/api/appointments";
+import { patientApi } from "@/api/patients";
 import { toast } from "sonner";
 import type { Appointment } from "@/api/interfaces/appointment";
 
@@ -70,9 +71,14 @@ export const CreatePrescriptionModal: React.FC<
 
   const fetchPatients = async () => {
     try {
+      console.log(`Fetching patients for doctor ${Doctor_id}`);
+
+      // First, try to get patients who have appointments with this doctor
       const appointmentData = (await appointmentApi.getByDoctorId(
         Doctor_id
       )) as ExtendedAppointment[];
+
+      console.log("Appointment data:", appointmentData);
 
       const uniquePatients = new Map();
       appointmentData.forEach((appointment) => {
@@ -88,7 +94,30 @@ export const CreatePrescriptionModal: React.FC<
         }
       });
 
-      const patientsArray = Array.from(uniquePatients.values());
+      let patientsArray = Array.from(uniquePatients.values());
+
+      // If no patients found through appointments, get all patients as fallback
+      if (patientsArray.length === 0) {
+        console.log(
+          "No patients found through appointments, fetching all patients as fallback"
+        );
+        try {
+          const allPatients = await patientApi.getAll();
+          console.log("All patients:", allPatients);
+
+          // Transform the data to match our interface
+          patientsArray = allPatients
+            .map((patient: any) => ({
+              Patient_id: patient.Patient_id,
+              User_id: patient.User_id,
+              user: patient.user, // This should contain First_Name, Last_Name, Email
+            }))
+            .filter((patient) => patient.user); // Only include patients with user data
+        } catch (error) {
+          console.warn("Failed to fetch all patients as fallback:", error);
+        }
+      }
+
       setPatients(patientsArray);
       console.log(
         `Found ${patientsArray.length} patients for doctor ${Doctor_id}`

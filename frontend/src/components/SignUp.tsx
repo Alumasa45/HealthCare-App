@@ -551,7 +551,8 @@ function SignUpForm() {
     <div
       className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 font-sans relative"
       style={{
-        backgroundImage: "url('/Stethoscope neon.jpg')",
+        backgroundImage:
+          "url('/Stethoscope Neon Sign, Stethoscope LED Light, Hospital Wall Decor, Medical Room Wall Art, Doctor Office Neon Light, Healthcare Neon Art.jpeg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

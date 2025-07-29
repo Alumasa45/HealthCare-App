@@ -138,7 +138,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
       await Promise.all(orderPromises);
 
       toast.success(
-        `${Object.keys(itemsByPharmacy).length} order(s) placed successfully!`
+        "Order confirmed. Your delivery is on the way! You will be feeling well in a few minutes🚲📦"
       );
       clearCart();
       onClose();

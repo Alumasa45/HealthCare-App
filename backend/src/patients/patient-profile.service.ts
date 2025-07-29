@@ -16,15 +16,10 @@ export class PatientProfileService {
     private readonly patientRepository: Repository<Patient>,
   ) {}
 
-  /**
-   * Automatically creates a patient profile for a user if they don't have one
-   * and their User_Type is 'Patient'
-   */
   async ensurePatientProfile(userId: number): Promise<Patient | null> {
     try {
       this.logger.log(`Ensuring patient profile exists for User ID: ${userId}`);
 
-      // First check if user exists
       const user = await this.userRepository.findOne({
         where: { User_id: userId },
       });
@@ -34,7 +29,6 @@ export class PatientProfileService {
         return null;
       }
 
-      // Only create patient profiles for users with User_Type = 'Patient'
       if (user.User_Type !== 'Patient') {
         this.logger.log(
           `User ID ${userId} is not a Patient (Type: ${user.User_Type}), skipping patient profile creation`,
@@ -42,7 +36,6 @@ export class PatientProfileService {
         return null;
       }
 
-      // Check if patient profile already exists
       const existingPatient = await this.patientRepository.findOne({
         where: { User_id: userId },
       });
@@ -52,15 +45,14 @@ export class PatientProfileService {
         return existingPatient;
       }
 
-      // Create default patient profile with minimal required data
       const defaultPatientData: CreatePatientDto = {
         User_id: userId,
         Emergency_Contact_Name: 'Not Provided',
         Emergency_Contact_Phone: 'Not Provided',
         Emergency_Contact_Relationship: 'Not Provided',
-        Blood_Group: 'O+' as any, // Default blood group
-        Height: 170, // Default height in cm
-        Weight: 70, // Default weight in kg
+        Blood_Group: 'O+' as any,
+        Height: 170, 
+        Weight: 70, 
         Allergies: 'None specified',
         Chronic_Conditions: 'None specified',
         Insurance_Provider: 'Not specified',
@@ -86,9 +78,6 @@ export class PatientProfileService {
     }
   }
 
-  /**
-   * Creates patient profiles for all existing Patient-type users who don't have them
-   */
   async createMissingPatientProfiles(): Promise<{
     created: number;
     skipped: number;
@@ -101,7 +90,6 @@ export class PatientProfileService {
     let errors = 0;
 
     try {
-      // Get all users with User_Type = 'Patient'
       const patientUsers = await this.userRepository.find({
         where: { User_Type: 'Patient' as User['User_Type'] },
       });
@@ -136,9 +124,6 @@ export class PatientProfileService {
     }
   }
 
-  /**
-   * Validates if a user needs a patient profile before appointment booking
-   */
   async validatePatientForAppointment(userId: number): Promise<{
     valid: boolean;
     patient?: Patient;
@@ -163,7 +148,6 @@ export class PatientProfileService {
         };
       }
 
-      // Try to ensure patient profile exists
       const patient = await this.ensurePatientProfile(userId);
 
       if (!patient) {
