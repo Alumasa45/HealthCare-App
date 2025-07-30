@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Management System API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .api-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        .api-link:hover {
+            background: #0056b3;
+        }
+        .status {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .info {
+            color: #666;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Healthcare Management System</h1>
+        <div class="status">✅ API Server is Running</div>
+        
+        <div class="info">
+            <p>Welcome to the Healthcare Management System API server.</p>
+            <p>This server provides comprehensive healthcare management services including patient records, appointments, prescriptions, and more.</p>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="/api/docs" class="api-link">📚 API Documentation</a>
+            <a href="/api/api-json" class="api-link">📄 OpenAPI Spec</a>
+        </div>
+        
+        <div class="info" style="margin-top: 30px;">
+            <p><strong>Available Endpoints:</strong></p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>Authentication: <code>/api/auth</code></li>
+                <li>Users: <code>/api/users</code></li>
+                <li>Patients: <code>/api/patients</code></li>
+                <li>Doctors: <code>/api/doctors</code></li>
+                <li>Appointments: <code>/api/appointments</code></li>
+                <li>Prescriptions: <code>/api/prescriptions</code></li>
+                <li>Pharmacies: <code>/api/pharmacies</code></li>
+                <li>Medical Records: <code>/api/medical-records</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simple health check display
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Healthcare API Server Landing Page Loaded');
+            
+            // Optional: Add real-time status check
+            fetch('/api/users/public')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ API health check passed');
+                    } else {
+                        console.warn('⚠️ API health check failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ API health check error:', error);
+                });
+        });
+    </script>
+</body>
+</html>

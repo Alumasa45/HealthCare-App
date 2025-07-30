@@ -14,14 +14,26 @@ async function bootstrap() {
   // Set global API prefix to match frontend expectations
   app.setGlobalPrefix('api');
 
+  // Serve static files from public directory
   app.use('/static', express.static(join(__dirname, '..', 'public')));
+
+  // Also serve static files from the root public path for deployed environments
+  app.use(express.static(join(__dirname, '..', 'public')));
 
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT', 3001); // Default to 3001 if PORT not set
 
+  // Handle root path requests
   app.use((req, res, next) => {
     if (req.path === '/') {
-      return res.redirect('/api/docs');
+      // Try to serve index.html if it exists, otherwise redirect to API docs
+      const indexPath = join(__dirname, '..', 'public', 'index.html');
+      try {
+        res.sendFile(indexPath);
+      } catch (error) {
+        res.redirect('/api/docs');
+      }
+      return;
     }
     next();
   });

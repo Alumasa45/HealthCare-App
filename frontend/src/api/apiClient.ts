@@ -1,25 +1,40 @@
 import axios from "axios";
 
-// Debug environment variables
 console.log("🔍 Environment Debug:");
 console.log("- VITE_API_URL:", import.meta.env.VITE_API_URL);
 console.log("- All env vars:", import.meta.env);
 console.log("- Mode:", import.meta.env.MODE);
 
+const getApiBaseUrl = () => {
+  const isDevelopment = import.meta.env.MODE === "development";
+
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  if (isDevelopment) {
+    return "http://localhost:3001";
+  }
+
+  return "https://healthcare-app-60pj.onrender.com";
+};
+
+const apiBaseUrl = getApiBaseUrl();
+
 const apiClient = axios.create({
-  baseURL: "https://healthcare-app-60pj.onrender.com", // Force deployed URL
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000, // 30 seconds timeout for slow Render.com responses
+  timeout: 30000, // 30 seconds timeout for slow Render.com responses.
 });
 
-// Log the API URL being used for debugging
-console.log(
-  "🌐 API Client configured with base URL:",
-  "https://healthcare-app-60pj.onrender.com"
-);
+console.log("🌐 API Client configured with base URL:", apiBaseUrl);
 console.log("🔧 Environment:", import.meta.env.MODE || "development");
+console.log(
+  "🔧 VITE_API_URL env var:",
+  import.meta.env.VITE_API_URL || "not set"
+);
 
 const getCookie = (name: string): string | null => {
   return document.cookie.split("; ").reduce((r, v) => {
