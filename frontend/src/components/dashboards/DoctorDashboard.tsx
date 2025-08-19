@@ -72,6 +72,7 @@ const DoctorDashboard: React.FC = () => {
     useState(false);
   const [selectedAppointmentForRecord, setSelectedAppointmentForRecord] =
     useState<ExtendedAppointment | null>(null);
+  const [resolvedDoctorId, setResolvedDoctorId] = useState<number | null>(null);
 
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
   const [editingScheduleId, setEditingScheduleId] = useState<number | null>(
@@ -117,6 +118,15 @@ const DoctorDashboard: React.FC = () => {
           }
         }
 
+        // Set the resolved Doctor_id for use in modals
+        if (doctorId) {
+          setResolvedDoctorId(doctorId);
+        } else {
+          console.warn("Doctor ID not found:", user);
+          setError("Doctor ID not found. Please contact support.");
+          return;
+        }
+
         if (!doctorId) {
           console.warn("Doctor ID not found:", user);
           setError("Doctor ID not found. Please contact support.");
@@ -146,7 +156,28 @@ const DoctorDashboard: React.FC = () => {
           number,
           ExtendedAppointment["patient"]
         >();
-        (appointmentData as ExtendedAppointment[]).forEach((apt) => {
+
+        // Add validation for appointmentData
+        console.log("🔍 Appointment data structure:", appointmentData);
+        console.log("🔍 Is array?", Array.isArray(appointmentData));
+
+        // Ensure appointmentData is an array
+        const appointmentsArray = Array.isArray(appointmentData)
+          ? appointmentData
+          : appointmentData &&
+            typeof appointmentData === "object" &&
+            "data" in appointmentData &&
+            Array.isArray((appointmentData as any).data)
+          ? (appointmentData as any).data
+          : [];
+
+        console.log(
+          "🔍 Using appointments array:",
+          appointmentsArray.length,
+          "items"
+        );
+
+        (appointmentsArray as ExtendedAppointment[]).forEach((apt) => {
           if (
             apt.patient &&
             typeof apt.Patient_id === "number" &&
@@ -1264,8 +1295,17 @@ const DoctorDashboard: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => setIsCreatePrescriptionOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            onClick={() => {
+              if (!resolvedDoctorId) {
+                toast.error(
+                  "Doctor information not loaded. Please wait or refresh the page."
+                );
+                return;
+              }
+              setIsCreatePrescriptionOpen(true);
+            }}
+            disabled={!resolvedDoctorId}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" />
             Create Prescription
@@ -1282,8 +1322,17 @@ const DoctorDashboard: React.FC = () => {
               Start by creating your first prescription for a patient
             </p>
             <button
-              onClick={() => setIsCreatePrescriptionOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto transition-colors"
+              onClick={() => {
+                if (!resolvedDoctorId) {
+                  toast.error(
+                    "Doctor information not loaded. Please wait or refresh the page."
+                  );
+                  return;
+                }
+                setIsCreatePrescriptionOpen(true);
+              }}
+              disabled={!resolvedDoctorId}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="h-4 w-4" />
               Create First Prescription
@@ -1502,29 +1551,28 @@ const DoctorDashboard: React.FC = () => {
       <div className="relative z-10 mb-8">{renderContent()}</div>
 
       <CreatePrescriptionModal
-        isOpen={isCreatePrescriptionOpen}
+        isOpen={isCreatePrescriptionOpen && resolvedDoctorId !== null}
         onClose={() => setIsCreatePrescriptionOpen(false)}
-        Doctor_id={doctor?.Doctor_id || 0}
+        Doctor_id={resolvedDoctorId || 0}
         onSuccess={() => {
           toast.success("Prescription created successfully!");
         }}
       />
 
       <MedicalRecordModal
-        isOpen={isMedicalRecordModalOpen}
+        isOpen={isMedicalRecordModalOpen && resolvedDoctorId !== null}
         onClose={() => {
           setIsMedicalRecordModalOpen(false);
           setSelectedAppointmentForRecord(null);
         }}
         patientId={selectedAppointmentForRecord?.Patient_id || 0}
-        doctorId={user?.Doctor_id || doctor?.Doctor_id || 0}
+        doctorId={resolvedDoctorId || 0}
         appointmentId={selectedAppointmentForRecord?.Appointment_id}
         onSuccess={() => {
           // Refresh medical records
           recordsApi.findAll().then((records) => {
             const doctorRecords = records.filter(
-              (record) =>
-                record.Doctor_id === (user?.Doctor_id || doctor?.Doctor_id)
+              (record) => record.Doctor_id === resolvedDoctorId
             );
             setMedicalRecords(doctorRecords);
           });

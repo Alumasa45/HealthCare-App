@@ -5,10 +5,7 @@ import { handleApiError } from "./errorUtils";
 export const appointmentApi = {
   register: async (appointmentData: AppointmentInfo): Promise<Appointment> => {
     try {
-      const response = await apiClient.post(
-        "/api/appointments",
-        appointmentData
-      );
+      const response = await apiClient.post("/appointments", appointmentData);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -17,7 +14,7 @@ export const appointmentApi = {
 
   getAll: async (): Promise<Appointment[]> => {
     try {
-      const response = await apiClient.get("/api/appointments");
+      const response = await apiClient.get("/appointments");
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -26,9 +23,7 @@ export const appointmentApi = {
 
   getByDoctorId: async (Doctor_id: number): Promise<Appointment[]> => {
     try {
-      const response = await apiClient.get(
-        `/api/appointments/doctor/${Doctor_id}`
-      );
+      const response = await apiClient.get(`/appointments/doctor/${Doctor_id}`);
       const data = response.data;
       console.log("Appointments for doctor:", data);
       return data;
@@ -40,7 +35,7 @@ export const appointmentApi = {
   getByPatientId: async (Patient_id: number): Promise<Appointment[]> => {
     try {
       const response = await apiClient.get(
-        `/api/appointments/patient/${Patient_id}`
+        `/appointments/patient/${Patient_id}`
       );
       return response.data;
     } catch (error) {
@@ -50,7 +45,7 @@ export const appointmentApi = {
 
   getByUserId: async (User_id: number): Promise<Appointment[]> => {
     try {
-      const response = await apiClient.get(`/api/appointments/user/${User_id}`);
+      const response = await apiClient.get(`/appointments/user/${User_id}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -59,9 +54,7 @@ export const appointmentApi = {
 
   getById: async (Appointment_id: number): Promise<Appointment> => {
     try {
-      const response = await apiClient.get(
-        `/api/appointments/${Appointment_id}`
-      );
+      const response = await apiClient.get(`/appointments/${Appointment_id}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -74,7 +67,7 @@ export const appointmentApi = {
   ): Promise<Appointment> => {
     try {
       const response = await apiClient.patch(
-        `/api/appointments/${Appointment_id}`,
+        `/appointments/${Appointment_id}`,
         appointmentData
       );
       return response.data;
@@ -85,7 +78,7 @@ export const appointmentApi = {
 
   delete: async (Appointment_id: number): Promise<void> => {
     try {
-      await apiClient.delete(`/api/appointments/${Appointment_id}`);
+      await apiClient.delete(`/appointments/${Appointment_id}`);
     } catch (error) {
       throw handleApiError(error);
     }

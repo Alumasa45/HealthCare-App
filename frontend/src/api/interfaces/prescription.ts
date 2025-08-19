@@ -2,7 +2,7 @@ export interface Prescription {
   Prescription_id: number;
   Patient_id: number;
   Doctor_id: number;
-  Appointment_id: number;
+  Appointment_id?: number | null;
   Medicine_Name: string;
   Prescription_Number: string;
   Issue_Date: Date;

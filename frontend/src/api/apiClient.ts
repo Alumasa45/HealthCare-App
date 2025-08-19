@@ -22,14 +22,14 @@ const getApiBaseUrl = () => {
 const apiBaseUrl = getApiBaseUrl();
 
 const apiClient = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: `${apiBaseUrl}/api`,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 30000, // 30 seconds timeout for slow Render.com responses.
 });
 
-console.log("🌐 API Client configured with base URL:", apiBaseUrl);
+console.log("🌐 API Client configured with base URL:", `${apiBaseUrl}/api`);
 console.log("🔧 Environment:", import.meta.env.MODE || "development");
 console.log(
   "🔧 VITE_API_URL env var:",
@@ -75,13 +75,34 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("🔥 API Error:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      url: error.config?.url,
-      method: error.config?.method,
-    });
+    // Enhanced error logging with better structure
+    const errorInfo = {
+      message: error.message || "Unknown error",
+      code: error.code || "No error code",
+      status: error.response?.status || "No status",
+      statusText: error.response?.statusText || "No status text",
+      data: error.response?.data || "No response data",
+      url: error.config?.url || "No URL",
+      method: error.config?.method?.toUpperCase() || "No method",
+      baseURL: error.config?.baseURL || "No base URL",
+      fullURL:
+        error.config?.baseURL && error.config?.url
+          ? `${error.config.baseURL}${error.config.url}`
+          : "Cannot construct full URL",
+    };
+
+    console.error("🔥 Enhanced API Error Details:", errorInfo);
+
+    // Network-specific error handling
+    if (
+      error.code === "ERR_NETWORK" ||
+      error.code === "ERR_QUIC_PROTOCOL_ERROR"
+    ) {
+      console.error("🌐 Network connectivity issue detected:");
+      console.error("  - Check if backend server is running");
+      console.error("  - Verify network connection");
+      console.error("  - Full URL being accessed:", errorInfo.fullURL);
+    }
 
     if (error.response?.status === 401) {
       console.error("🚫 Authentication failed - clearing tokens");

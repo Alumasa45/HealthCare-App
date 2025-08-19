@@ -9,10 +9,7 @@ import type {
 export const userApi = {
   create: async (userData: RegisterData): Promise<AuthResponse> => {
     try {
-      const response = await apiClient.post<AuthResponse>(
-        "/api/users",
-        userData
-      );
+      const response = await apiClient.post<AuthResponse>("/users", userData);
       return response.data;
     } catch (error: any) {
       console.error("Error registering user:", error);
@@ -44,7 +41,7 @@ export const userApi = {
   // Login user
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      "/api/users/login",
+      "/users/login",
       credentials
     );
     return response.data;
@@ -52,7 +49,7 @@ export const userApi = {
 
   // Get current user profile
   getProfile: async (): Promise<User> => {
-    const response = await apiClient.get<User>("/api/users/");
+    const response = await apiClient.get<User>("/users/");
     return response.data;
   },
 
@@ -61,33 +58,30 @@ export const userApi = {
     userId: string,
     updates: Partial<User>
   ): Promise<User> => {
-    const response = await apiClient.patch<User>(
-      `/api/users/${userId}`,
-      updates
-    );
+    const response = await apiClient.patch<User>(`/users/${userId}`, updates);
     return response.data;
   },
 
   // Delete user account
   deleteAccount: async (userId: string): Promise<void> => {
-    await apiClient.delete(`/api/users/${userId}`);
+    await apiClient.delete(`/users/${userId}`);
   },
 
   // Get user by ID (for admin purposes)
   getUserById: async (userId: string): Promise<User> => {
-    const response = await apiClient.get<User>(`/api/users/${userId}`);
+    const response = await apiClient.get<User>(`/users/${userId}`);
     return response.data;
   },
 
   // List all users (for admin purposes)
   listUsers: async (): Promise<User[]> => {
-    const response = await apiClient.get<User[]>("/api/users");
+    const response = await apiClient.get<User[]>("/users");
     return response.data;
   },
 
   // List all users publicly (without authentication, limited data)
   listUsersPublic: async (): Promise<Partial<User>[]> => {
-    const response = await apiClient.get<Partial<User>[]>("/api/users/public");
+    const response = await apiClient.get<Partial<User>[]>("/users/public");
     return response.data;
   },
 
@@ -97,7 +91,7 @@ export const userApi = {
     newPassword: string;
   }): Promise<void> => {
     try {
-      await apiClient.post("/api/users/change-password", data);
+      await apiClient.post("/users/change-password", data);
     } catch (error) {
       console.log("Error changing password", error);
       throw new Error("Error changing password");

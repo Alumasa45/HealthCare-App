@@ -64,15 +64,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { userApi } from "@/api/users";
-import { doctorApi } from "@/api/doctors";
-import { pharmacistApi } from "@/api/pharmacists";
-import { patientApi, type Patient } from "@/api/patients";
 import { notificationApi } from "@/api/notifications";
 import type { User } from "@/api/interfaces/user";
 import type { Notification } from "@/api/interfaces/notification";
 import type { Doctors as Doctor } from "@/api/interfaces/doctor";
 import type { Pharmacist } from "@/api/interfaces/pharmacist";
 import { Textarea } from "../ui/textarea";
+import { doctorApi } from "@/api/doctors";
+import { pharmacistApi } from "@/api/pharmacists";
+import type { Patient } from "@/api/patients";
 
 type AdminTabType =
   | "overview"
@@ -94,12 +94,13 @@ const AdminDashboard = () => {
 
   // Data states
   const [users, setUsers] = useState<User[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [pharmacists, setPharmacists] = useState<Pharmacist[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [pharmacists, setPharmacists] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [availableDoctors, setAvailableDoctors] = useState<User[]>([])
 
   // Form states for user creation
   const [newUser, setNewUser] = useState({
@@ -114,11 +115,10 @@ const AdminDashboard = () => {
     Password: "",
   });
 
-  // Form states for doctor registration
   const [newDoctor, setNewDoctor] = useState({
     User_id: "",
     License_number: "",
-    Password: "", // Add password field
+    Password: "", 
     Specialization: "",
     Qualification: "",
     Experience_Years: 0,
@@ -130,7 +130,6 @@ const AdminDashboard = () => {
     Reviews: "",
   });
 
-  // Form states for pharmacist registration
   const [newPharmacist, setNewPharmacist] = useState({
     User_id: "",
     Pharmacy_Name: "",
@@ -146,7 +145,6 @@ const AdminDashboard = () => {
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Analytics state
   const [analyticsData, setAnalyticsData] = useState({
     userDistribution: [
       { name: "Doctors", value: 0, color: "#8B5CF6" },
@@ -167,9 +165,13 @@ const AdminDashboard = () => {
       appointments: number;
       prescriptions: number;
     }>,
+    notifications: {
+      total: 0,
+      unread: 0,
+      recent: 0,
+    },
   });
 
-  // Helper function to check if email is already taken
   const isEmailTaken = (email: string): boolean => {
     if (!email) return false;
     return !!users.find(
@@ -177,14 +179,12 @@ const AdminDashboard = () => {
     );
   };
 
-  // Helper function to get available users count for suggestion
   const getAvailableUsersCount = (): number => {
     if (!newUser.User_Type) return 0;
     return availableUsers.filter((user) => user.User_Type === newUser.User_Type)
       .length;
   };
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -248,34 +248,34 @@ const AdminDashboard = () => {
       const usersData = await userApi.listUsers();
       console.log("✅ Users fetched:", usersData?.length || 0);
 
-      console.log("📡 Fetching doctors...");
-      const doctorsData = await doctorApi.getAll();
-      console.log("✅ Doctors fetched:", doctorsData?.length || 0);
+      //filter usersData to get only doctors
+      console.log("🔍 User data structure:", usersData);
+      const doctorsData=usersData.filter((user) => user.User_Type === "Doctor");
+      setDoctors(doctorsData || []);
+      console.log("🔍 Filtered doctors:", doctorsData);
+      const pharmacistsData = usersData.filter((user) => user.User_Type === "Pharmacist");
+      setPharmacists(pharmacistsData || []);
+      console.log("🔍 Filtered pharmacists:", pharmacistsData);
+      const patientsData = usersData.filter((user)=> user.User_Type === "Patient");
+      setPatients(patientsData || []);
+      console.log("🔍 Filtered patients:", patientsData);
 
-      console.log("📡 Fetching pharmacists...");
-      const pharmacistsData = await pharmacistApi.getAll();
-      console.log("✅ Pharmacists fetched:", pharmacistsData?.length || 0);
-
-      console.log("📡 Fetching patients...");
-      const patientsData = await patientApi.getAll();
-      console.log("✅ Patients fetched:", patientsData?.length || 0);
 
       console.log("📡 Fetching notifications...");
       const notificationsData = await notificationApi.findAll();
       console.log("✅ Notifications fetched:", notificationsData?.length || 0);
 
       setUsers(usersData || []);
-      setDoctors(doctorsData || []);
-      setPharmacists(pharmacistsData || []);
-      setPatients(patientsData || []);
-      setNotifications(notificationsData || []);
+
+      // Ensure notifications is always an array
+      const safeNotifications = Array.isArray(notificationsData)
+        ? notificationsData
+        : [];
+      setNotifications(safeNotifications);
 
       // Generate analytics data
       generateAnalyticsData(
         usersData || [],
-        doctorsData || [],
-        pharmacistsData || [],
-        patientsData || [],
         notificationsData || []
       );
 
@@ -294,17 +294,13 @@ const AdminDashboard = () => {
 
   const generateAnalyticsData = (
     usersData: User[],
-    doctorsData: Doctor[],
-    pharmacistsData: Pharmacist[],
-    patientsData: Patient[],
     notificationsData: Notification[]
   ) => {
-    // User distribution data
     const adminUsers = usersData.filter((user) => user.User_Type === "Admin");
     const userDistribution = [
-      { name: "Doctors", value: doctorsData.length, color: "#8B5CF6" },
-      { name: "Patients", value: patientsData.length, color: "#06B6D4" },
-      { name: "Pharmacists", value: pharmacistsData.length, color: "#10B981" },
+      { name: "Doctors", value: usersData.length, color: "#8B5CF6" },
+      { name: "Patients", value: usersData.length, color: "#06B6D4" },
+      { name: "Pharmacists", value: usersData.length, color: "#10B981" },
       { name: "Admins", value: adminUsers.length, color: "#F59E0B" },
     ];
 
@@ -318,14 +314,14 @@ const AdminDashboard = () => {
       { month: "Jun", doctors: 25, patients: 48, pharmacists: 11, total: 84 },
       {
         month: "Jul",
-        doctors: doctorsData.length > 25 ? doctorsData.length - 25 : 8,
-        patients: patientsData.length > 48 ? patientsData.length - 48 : 35,
+        doctors: usersData.length > 25 ? usersData.length - 25 : 8,
+        patients: usersData.length > 48 ? usersData.length - 48 : 35,
         pharmacists:
-          pharmacistsData.length > 11 ? pharmacistsData.length - 11 : 5,
+          usersData.length > 11 ? usersData.length - 11 : 5,
         total:
-          (doctorsData.length > 25 ? doctorsData.length - 25 : 8) +
-          (patientsData.length > 48 ? patientsData.length - 48 : 35) +
-          (pharmacistsData.length > 11 ? pharmacistsData.length - 11 : 5),
+          (usersData.length > 25 ? usersData.length - 25 : 8) +
+          (usersData.length > 48 ? usersData.length - 48 : 35) +
+          (usersData.length > 11 ? usersData.length - 11 : 5),
       },
     ];
 
@@ -340,10 +336,22 @@ const AdminDashboard = () => {
       { month: "Jul", revenue: 22300, appointments: 201, prescriptions: 167 },
     ];
 
+    // Calculate notification metrics
+    const notificationMetrics = {
+      total: notificationsData.length,
+      unread: notificationsData.filter((n) => n.Status === "unread").length,
+      recent: notificationsData.filter((n) => {
+        const notificationDate = new Date(n.Created_at);
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return notificationDate > dayAgo;
+      }).length,
+    };
+
     setAnalyticsData({
       userDistribution,
       monthlyRegistrations,
       revenueData,
+      notifications: notificationMetrics,
     });
   };
 
@@ -353,8 +361,8 @@ const AdminDashboard = () => {
       console.log("📋 All users fetched:", allUsers);
 
       if (registrationTab === "doctor") {
-        // Filter out users who already have doctor profiles
         const existingDoctorUserIds = doctors.map((doctor) => doctor.User_id);
+        // {Array.isArray(users) ? users.length : 0}
         console.log("🏥 Existing doctor User_ids:", existingDoctorUserIds);
 
         const availableDoctorUsers = allUsers.filter(
@@ -365,7 +373,6 @@ const AdminDashboard = () => {
         console.log("✅ Available doctor users:", availableDoctorUsers);
         setAvailableUsers(availableDoctorUsers);
       } else if (registrationTab === "pharmacist") {
-        // Filter out users who already have pharmacist profiles
         const existingPharmacistUserIds = pharmacists.map(
           (pharmacist) => pharmacist.User_id
         );
@@ -382,6 +389,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchAvailableDoctors = async () => {
+    try {
+      const allUsers = await userApi.listUsers();
+      const DoctorUsers = allUsers.filter(
+        (user) => user.User_Type === "Doctor"
+      );
+      setAvailableDoctors(DoctorUsers);
+    } catch (error) {
+      console.log("Error fetching Doctors:", error);
+      toast.error("Failed to load doctors")
+    }
+  };
+
   const handleCreateUser = async () => {
     try {
       if (
@@ -395,7 +415,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Check if user with this email already exists
       if (isEmailTaken(newUser.Email)) {
         toast.error(
           `A user with email ${newUser.Email} already exists. Please use a different email or select the existing user.`
@@ -446,6 +465,7 @@ const AdminDashboard = () => {
       // Refresh data
       await fetchAllData();
       await fetchAvailableUsers();
+      await fetchAvailableDoctors();
 
       return createdUser;
     } catch (error: any) {
@@ -544,15 +564,12 @@ const AdminDashboard = () => {
 
       console.log("🏥 Creating doctor with registration data:", doctorData);
 
-      // If we have a user that was already created (either selected or newly created),
-      // we need to delete it first since the doctor API will create a new user
       if (userData.User_id) {
         try {
           await userApi.deleteAccount(userData.User_id.toString());
           console.log("✅ Deleted existing user before doctor creation");
         } catch (deleteError) {
           console.warn("Could not delete existing user:", deleteError);
-          // Continue anyway - the backend might handle duplicates
         }
       }
 
@@ -703,7 +720,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700">
-              {users.length}
+              {Array.isArray(users) ? users.length : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               All registered users
@@ -718,7 +735,10 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700">
-              {doctors.length}
+              {Array.isArray(doctors) ? doctors.length : 0}
+              {doctors.map((doctor) => (
+                <div key={doctor.Doctor_id}>{doctor.Bio}</div>
+              ))}
             </div>
             <p className="text-xs text-muted-foreground">Registered doctors</p>
           </CardContent>
@@ -731,7 +751,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700">
-              {pharmacists.length}
+              {Array.isArray(pharmacists) ? pharmacists.length : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Registered pharmacists
@@ -746,7 +766,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700">
-              {patients.length}
+              {Array.isArray(patients) ? patients.length : 0}
             </div>
             <p className="text-xs text-muted-foreground">Registered patients</p>
           </CardContent>
@@ -852,7 +872,7 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {notifications.length === 0 ? (
+            {!Array.isArray(notifications) || notifications.length === 0 ? (
               <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <AlertCircle className="h-4 w-4 text-gray-500" />
                 <span className="text-sm text-gray-700">
@@ -1463,7 +1483,9 @@ const AdminDashboard = () => {
                     <br />• Created User ID: {createdUserId || "None"}
                     <br />• Selected User:{" "}
                     {selectedUser && (selectedUser as User).First_Name
-                      ? `${(selectedUser as User).First_Name} ${(selectedUser as User).Last_Name}`
+                      ? `${(selectedUser as User).First_Name} ${
+                          (selectedUser as User).Last_Name
+                        }`
                       : "None"}
                     <br />• Available Users: {availableUsers.length}
                     <br />• Registration Step: {registrationStep}
@@ -1692,61 +1714,70 @@ const AdminDashboard = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {users.map((user) => (
-            <div
-              key={user.User_id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold">
-                  {user.First_Name} {user.Last_Name}
-                </h3>
-                <p className="text-sm text-muted-foreground">{user.Email}</p>
-                <div className="flex gap-2 mt-2">
-                  <Badge variant="outline">{user.User_Type}</Badge>
-                  <Badge
-                    variant={
-                      user.Account_Status === "Active"
-                        ? "default"
-                        : "destructive"
-                    }
-                  >
-                    {user.Account_Status || "Active"}
-                  </Badge>
+          {Array.isArray(users) && users.length > 0 ? (
+            users.map((user) => (
+              <div
+                key={user.User_id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold">
+                    {user.First_Name} {user.Last_Name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{user.Email}</p>
+                  <div className="flex gap-2 mt-2">
+                    <Badge variant="outline">{user.User_Type}</Badge>
+                    <Badge
+                      variant={
+                        user.Account_Status === "Active"
+                          ? "default"
+                          : "destructive"
+                      }
+                    >
+                      {user.Account_Status || "Active"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="text-sm text-muted-foreground mr-4">
+                    ID: {user.User_id}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleSuspendUser(
+                          user.User_id,
+                          user.Account_Status !== "InActive"
+                        )
+                      }
+                      disabled={loading}
+                    >
+                      {user.Account_Status === "InActive"
+                        ? "Activate"
+                        : "Suspend"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user.User_id)}
+                      disabled={loading}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="text-sm text-muted-foreground mr-4">
-                  ID: {user.User_id}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handleSuspendUser(
-                        user.User_id,
-                        user.Account_Status !== "InActive"
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    {user.Account_Status === "InActive"
-                      ? "Activate"
-                      : "Suspend"}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.User_id)}
-                    disabled={loading}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No users found in the system.</p>
+              <p className="text-sm mt-2">
+                This is unexpected. Check your database connection.
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </CardContent>
     </Card>
@@ -1760,35 +1791,46 @@ const AdminDashboard = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {doctors.map((doctor) => {
-            // Find the corresponding user
-            const doctorUser = users.find((u) => u.User_id === doctor.User_id);
-            return (
-              <div
-                key={doctor.Doctor_id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div>
-                  <h3 className="font-semibold">
-                    Dr. {doctorUser?.First_Name || "Unknown"}{" "}
-                    {doctorUser?.Last_Name || "User"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {doctor.Specialization}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {doctor.Department}
-                  </p>
-                  <Badge variant="outline">
-                    {doctor.Experience_Years} years experience
-                  </Badge>
+          {Array.isArray(doctors) && doctors.length > 0 ? (
+            doctors.map((doctor) => {
+              // Find the corresponding user
+              const doctorUser = users.find(
+                (u) => u.User_id === doctor.User_id
+              );
+              return (
+                <div
+                  key={doctor.Doctor_id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div>
+                    <h3 className="font-semibold">
+                      Dr. {doctorUser?.First_Name || "Unknown"}{" "}
+                      {doctorUser?.Last_Name || "User"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {doctor.Specialization}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {doctor.Department}
+                    </p>
+                    <Badge variant="outline">
+                      {doctor.Experience_Years} years experience
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    License: {doctor.License_number}
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  License: {doctor.License_number}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No doctors found in the system.</p>
+              <p className="text-sm mt-2">
+                Use the Professional Registration section to add doctors.
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -1804,35 +1846,44 @@ const AdminDashboard = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {pharmacists.map((pharmacist) => (
-            <div
-              key={pharmacist.Pharmacy_id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div>
-                <h3 className="font-semibold">{pharmacist.Pharmacy_Name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {pharmacist.Email}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {pharmacist.Opening_Time} - {pharmacist.Closing_Time}
-                </p>
-                <div className="flex gap-2">
-                  <Badge
-                    variant={pharmacist.Is_Verified ? "default" : "secondary"}
-                  >
-                    {pharmacist.Is_Verified ? "Verified" : "Pending"}
-                  </Badge>
-                  {pharmacist.Delivery_Available && (
-                    <Badge variant="outline">Delivery Available</Badge>
-                  )}
+          {Array.isArray(pharmacists) && pharmacists.length > 0 ? (
+            pharmacists.map((pharmacist) => (
+              <div
+                key={pharmacist.Pharmacy_id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <div>
+                  <h3 className="font-semibold">{pharmacist.Pharmacy_Name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {pharmacist.Email}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {pharmacist.Opening_Time} - {pharmacist.Closing_Time}
+                  </p>
+                  <div className="flex gap-2">
+                    <Badge
+                      variant={pharmacist.Is_Verified ? "default" : "secondary"}
+                    >
+                      {pharmacist.Is_Verified ? "Verified" : "Pending"}
+                    </Badge>
+                    {pharmacist.Delivery_Available && (
+                      <Badge variant="outline">Delivery Available</Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  License: {pharmacist.License_Number}
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                License: {pharmacist.License_Number}
-              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No pharmacists found in the system.</p>
+              <p className="text-sm mt-2">
+                Use the Professional Registration section to add pharmacists.
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </CardContent>
     </Card>
@@ -1857,38 +1908,48 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {patients.map((patient) => {
-                  // Find the corresponding user
-                  const patientUser = users.find(
-                    (u) => u.User_id === patient.User_id
-                  );
-                  return (
-                    <div
-                      key={patient.Patient_id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-semibold">
-                          {patientUser?.First_Name ||
-                            patient.First_Name ||
-                            "Unknown"}{" "}
-                          {patientUser?.Last_Name ||
-                            patient.Last_Name ||
-                            "User"}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Blood Group: {patient.Blood_Group}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Emergency Contact: {patient.Emergency_Contact_Name}
-                        </p>
+                {Array.isArray(patients) && patients.length > 0 ? (
+                  patients.map((patient) => {
+                    // Find the corresponding user
+                    const patientUser = users.find(
+                      (u) => u.User_id === patient.User_id
+                    );
+                    return (
+                      <div
+                        key={patient.Patient_id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <h3 className="font-semibold">
+                            {patientUser?.First_Name ||
+                              patient.First_Name ||
+                              "Unknown"}{" "}
+                            {patientUser?.Last_Name ||
+                              patient.Last_Name ||
+                              "User"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Blood Group: {patient.Blood_Group}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Emergency Contact: {patient.Emergency_Contact_Name}
+                          </p>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          ID: {patient.Patient_id}
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        ID: {patient.Patient_id}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No patients found in the system.</p>
+                    <p className="text-sm mt-2">
+                      Patients will appear here when they register through the
+                      platform.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -2238,16 +2299,16 @@ const AdminDashboard = () => {
               {loading ? "Loading..." : "🔄 Refresh Data"}
             </Button>
             <Badge variant={users.length > 0 ? "default" : "destructive"}>
-              Users: {users.length}
+              Users: {Array.isArray(users) ? users.length : 0}
             </Badge>
             <Badge variant={doctors.length > 0 ? "default" : "destructive"}>
-              Doctors: {doctors.length}
+              Doctors: {Array.isArray(doctors) ? doctors.length : 0}
             </Badge>
             <Badge variant={pharmacists.length > 0 ? "default" : "destructive"}>
-              Pharmacists: {pharmacists.length}
+              Pharmacists: {Array.isArray(pharmacists) ? pharmacists.length : 0}
             </Badge>
             <Badge variant={patients.length > 0 ? "default" : "destructive"}>
-              Patients: {patients.length}
+              Patients: {Array.isArray(patients) ? patients.length : 0}
             </Badge>
           </div>
         </div>

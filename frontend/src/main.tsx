@@ -7,6 +7,7 @@ import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 import { ChatProvider } from "./contexts/ChatContext.tsx";
 import { CartProvider } from "./contexts/CartContext.tsx";
 import FloatingFeathers from "./components/FloatingFeathers.tsx";
+import SnowflakeCursor from "./components/ui/SnowflakeCursor.tsx";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -45,6 +46,7 @@ if (rootElement) {
             <NotificationProvider>
               <CartProvider>
                 <ChatProvider>
+                  <SnowflakeCursor />
                   <FloatingFeathers />
                   <ChatBubble />
                   <RouterProvider router={router} />
