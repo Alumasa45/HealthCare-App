@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { JSX } from "react";
 import {
   Calendar,
@@ -15,14 +15,12 @@ import {
 import type { Appointment } from "@/api/interfaces/appointment";
 import type { PrescriptionInfo } from "@/api/interfaces/prescription";
 import type { DoctorInfo } from "@/api/interfaces/doctor";
-import type { Order } from "@/api/interfaces/Order";
 import type { MedicineOrder } from "@/api/interfaces/orders";
 import type { Bill } from "@/api/interfaces/billing";
 import { appointmentApi } from "@/api/appointments";
 import { prescriptionapi } from "@/api/prescriptions";
 import { doctorApi } from "@/api/doctors";
 import { useNavigate } from "@tanstack/react-router";
-import { orderApi } from "@/api/orders";
 import { medicineOrderApi } from "@/api/medicineOrders";
 import { billingApi } from "@/api/billing";
 import { Button } from "@/components/ui/button";
@@ -180,8 +178,31 @@ const PatientDashboard = (): JSX.Element => {
       try {
         setLoading(true);
         setError(null);
-        const doctordata: DoctorInfo[] = await doctorApi.getAll();
-        // Ensure data is always an array
+        const doctorsRaw = await doctorApi.getAll();
+        // Map raw doctor objects to DoctorInfo type
+        const doctordata: DoctorInfo[] = Array.isArray(doctorsRaw)
+          ? doctorsRaw.map((doc: any) => ({
+              Doctor_id: doc.Doctor_id,
+              User_id: doc.User_id,
+              Email: doc.Email,
+              Password: doc.Password,
+              Phone_Number: doc.Phone_Number,
+              First_Name: doc.First_Name,
+              Last_Name: doc.Last_Name,
+              Specialization: doc.Specialization,
+              Qualification: doc.Qualification,
+              Experience_Years: doc.Experience_Years,
+              Department: doc.Department,
+              Bio: doc.Bio,
+              Languages_Spoken: doc.Languages_Spoken,
+              Is_Available_Online: doc.Is_Available_Online,
+              Rating: doc.Rating,
+              Reviews: doc.Reviews,
+              Date_of_Birth: doc.Date_of_Birth,
+              Gender: doc.Gender,
+              License_number: doc.License_number,
+            }))
+          : [];
         if (Array.isArray(doctordata)) {
           setDoctors(doctordata);
         } else {
@@ -649,7 +670,7 @@ const PatientDashboard = (): JSX.Element => {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
-                      Dr. {doctor.User_id}
+                      Dr. {doctor.First_Name} {doctor.Last_Name}
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div>

@@ -57,32 +57,6 @@ const step3Schema = z.object({
   Weight: z.number().min(1, "Weight is required"),
 });
 
-const formInfo = z.object({
-  First_Name: z.string().min(2, "First name must be at least 2 characters"),
-  Last_Name: z.string().min(2, "Last name must be at least 2 characters"),
-  Email: z.string().email("Please enter a valid email address"),
-  Password: z.string().min(6, "Password must be at least 6 characters"),
-  Phone_Number: z.string().min(10, "Phone number must be at least 10 digits"),
-  Date_of_Birth: z.date({ required_error: "Date of birth is required" }),
-  Gender: z.enum(["Male", "Female", "Other"], {
-    required_error: "Please select a gender",
-  }),
-  Emergency_Contact_Name: z
-    .string()
-    .min(2, "Emergency contact name is required"),
-  Emergency_Contact_Phone: z
-    .string()
-    .min(10, "Emergency contact phone is required"),
-  Emergency_Contact_Relationship: z.string().min(1, "Relationship is required"),
-  Blood_Group: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], {
-    required_error: "Please select your blood group",
-  }),
-  Height: z.number().min(1, "Height is required"),
-  Weight: z.number().min(1, "Weight is required"),
-});
-
-type FormData = z.infer<typeof formInfo>;
-
 const validateField = (value: any, schema: z.ZodType) => {
   try {
     schema.parse(value);

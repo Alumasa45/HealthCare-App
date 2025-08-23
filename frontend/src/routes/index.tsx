@@ -184,7 +184,6 @@ const HealthcareLanding: React.FC = () => {
 
   const Limage: React.FC<{
     className?: string;
-    variant?: "purple" | "blue";
     imageSrc?: string;
     altText?: string;
   }> = ({
@@ -212,7 +211,6 @@ const HealthcareLanding: React.FC = () => {
 
   const Image2: React.FC<{
     className?: string;
-    variant?: "purple" | "blue";
     imageSrc?: string;
     altText?: string;
   }> = ({

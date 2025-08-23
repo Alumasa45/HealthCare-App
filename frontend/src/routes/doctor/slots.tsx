@@ -65,7 +65,7 @@ export const Route = createFileRoute("/doctor/slots")({
           to: "/dashboard",
         });
       }
-    } catch (error) {
+    } catch {
       throw redirect({
         to: "/login",
       });

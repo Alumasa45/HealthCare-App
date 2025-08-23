@@ -2,7 +2,6 @@ import type { Prescription } from "@/api/interfaces/prescription";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { prescriptionapi } from "@/api/prescriptions";
-import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { ShoppingCart } from "lucide-react";
 import {
@@ -15,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import Loader from "@/constants/Loader";
 import { DataTableSkeleton } from "./ui/table-skeleton";
 
 interface TableRowActionsProps {
@@ -146,11 +144,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
 };
 
 const Prescriptions = () => {
-  const {
-    data: prescriptions,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: prescriptions, isLoading } = useQuery({
     queryKey: ["prescriptions"],
     queryFn: prescriptionapi.findAll,
   });

@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, CreditCard } from "lucide-react";
@@ -28,9 +27,7 @@ export function SessionBillingNotice() {
               <ShoppingCart className="w-4 h-4 text-orange-600" />
             </div>
             <div>
-              <p>
-                You have {sessionItems.length} unpaid item(s)
-              </p>
+              <p>You have {sessionItems.length} unpaid item(s)</p>
               <p className="text-sm text-orange-600">
                 Total amount due: KES{" "}
                 {billingSummary.totalAmount.toLocaleString()}
