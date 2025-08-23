@@ -57,7 +57,7 @@ function DoctorSlotsLayout() {
 }
 
 export const Route = createFileRoute("/_layout/doctorSlots")({
-  beforeLoad: ({ context }) => {
+  beforeLoad: () => {
     // Add authentication check here
     const token = localStorage.getItem("authToken");
     const userData = localStorage.getItem("userData");

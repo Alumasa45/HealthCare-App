@@ -1,8 +1,16 @@
-import type { MedicalRecords } from "@/api/interfaces/record"; 
+import type { MedicalRecords } from "@/api/interfaces/record";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { recordsApi } from "@/api/records"; 
-import { Table,TableBody,TableCaption,TableCell,TableHead,TableHeader,TableRow } from "@/components/ui/table"
+import { recordsApi } from "@/api/records";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { DataTableSkeleton } from "./ui/table-skeleton";
 import { CheckCircle, XCircle } from "lucide-react";
 import {
@@ -13,7 +21,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
 
 interface TableRowActionsProps {
   records: MedicalRecords;
@@ -28,7 +36,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
   onDelete,
   onView,
 }) => {
-      //state management.
+  //state management.
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +59,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
     setIsOpen(false);
   };
 
-    return (
+  return (
     <div className="relative inline-block" ref={dropdownRef}>
       {/* Three dots to trigger the button. */}
       <button
@@ -143,7 +151,7 @@ const TableRowActions: React.FC<TableRowActionsProps> = ({
 };
 
 const Records = () => {
-  const { data: records, isLoading, error } = useQuery({
+  const { data: records, isLoading } = useQuery({
     queryKey: ["records"],
     queryFn: recordsApi.findAll,
   });
@@ -173,74 +181,94 @@ const Records = () => {
   }
   // if (error) return <div>Error loading recordss</div>
 
-  
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow overflow-visible relative">
         <Table>
-  <TableCaption>View your medical records here.</TableCaption>
-  <TableHeader className="text bg-purple-300">
-    <TableRow>
-      <TableHead >Patient ID</TableHead>
-      <TableHead>Doctor ID</TableHead>
-      <TableHead>Visit Date</TableHead>
-      <TableHead>Diagnosis</TableHead>
-      <TableHead>Symptoms</TableHead>
-      <TableHead>Treatment Plan</TableHead>
-      <TableHead>Notes</TableHead>
-      <TableHead>Follow up required?</TableHead>
-      <TableHead>Follow up Date</TableHead>
-      <TableHead>Actions</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {records?.map((records) => (
-      <TableRow>
-      <TableCell className="font-medium">{records.Patient_id}</TableCell>
-      <TableCell>{records.Doctor_id}</TableCell>
-      <TableCell>{records.Visit_Date instanceof Date ? records.Visit_Date.toLocaleDateString() : String(records.Visit_Date)}</TableCell>
-      <TableCell className="text-right">{records.Diagnosis}</TableCell>
-      <TableCell className="text-right">{records.Symptoms}</TableCell>
-      <TableCell className="text-right">{records.Treatment_Plan}</TableCell>
-      <TableCell className="text-right">{records.Notes}</TableCell>
-      <TableCell className="text-right">{records.Follow_up_Required ? (<CheckCircle className="h-5 w-5 text-green-500" />) : (
-    <XCircle className="h-5 w-5 text-red-500" />)}
-    </TableCell>
-      <TableCell className="text-right">{records.Follow_Up_Date instanceof Date? records.Follow_Up_Date.toLocaleDateString(): String(records.Follow_Up_Date)}</TableCell>
-      <TableCell className="text-right">
-        <TableRowActions
-        records={records}
-        onEdit={() => { /* TODO: implement edit functionality */ }}
-        onDelete={() => { /* TODO: implement delete functionality */ }}
-        onView={() => { /* TODO: implement view functionality */ }}
-        />
-      </TableCell>
-    </TableRow>
-    ))}
-    
-  </TableBody>
-</Table>
-
-
+          <TableCaption>View your medical records here.</TableCaption>
+          <TableHeader className="text bg-purple-300">
+            <TableRow>
+              <TableHead>Patient ID</TableHead>
+              <TableHead>Doctor ID</TableHead>
+              <TableHead>Visit Date</TableHead>
+              <TableHead>Diagnosis</TableHead>
+              <TableHead>Symptoms</TableHead>
+              <TableHead>Treatment Plan</TableHead>
+              <TableHead>Notes</TableHead>
+              <TableHead>Follow up required?</TableHead>
+              <TableHead>Follow up Date</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {records?.map((records) => (
+              <TableRow>
+                <TableCell className="font-medium">
+                  {records.Patient_id}
+                </TableCell>
+                <TableCell>{records.Doctor_id}</TableCell>
+                <TableCell>
+                  {records.Visit_Date instanceof Date
+                    ? records.Visit_Date.toLocaleDateString()
+                    : String(records.Visit_Date)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {records.Diagnosis}
+                </TableCell>
+                <TableCell className="text-right">{records.Symptoms}</TableCell>
+                <TableCell className="text-right">
+                  {records.Treatment_Plan}
+                </TableCell>
+                <TableCell className="text-right">{records.Notes}</TableCell>
+                <TableCell className="text-right">
+                  {records.Follow_up_Required ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  {records.Follow_Up_Date instanceof Date
+                    ? records.Follow_Up_Date.toLocaleDateString()
+                    : String(records.Follow_Up_Date)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <TableRowActions
+                    records={records}
+                    onEdit={() => {
+                      /* TODO: implement edit functionality */
+                    }}
+                    onDelete={() => {
+                      /* TODO: implement delete functionality */
+                    }}
+                    onView={() => {
+                      /* TODO: implement view functionality */
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
       <Pagination>
-  <PaginationContent>
-    <PaginationItem>
-      <PaginationPrevious href="#" />
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationLink href="#">1</PaginationLink>
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationEllipsis />
-    </PaginationItem>
-    <PaginationItem>
-      <PaginationNext href="#" />
-    </PaginationItem>
-  </PaginationContent>
-</Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious href="#" />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink href="#">1</PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext href="#" />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 };
 
-export default Records
+export default Records;

@@ -20,7 +20,22 @@ export const notificationApi = {
   findAll: async (): Promise<Notification[]> => {
     try {
       const response = await apiClient.get("/notifications");
-      return response.data;
+
+      // Handle different response structures
+      let data = response.data;
+
+      // If the response has a data property, use that
+      if (data && typeof data === "object" && "data" in data) {
+        data = data.data;
+      }
+
+      // Ensure we return an array
+      if (!Array.isArray(data)) {
+        console.warn("Expected array from notifications API, got:", data);
+        return [];
+      }
+
+      return data;
     } catch (error) {
       throw handleApiError(error);
     }
@@ -28,8 +43,25 @@ export const notificationApi = {
 
   findByUserId: async (userId: number): Promise<Notification[]> => {
     try {
-      const response = await apiClient.get(`/notifications?userId=${userId}`);
-      return response.data;
+      const response = await apiClient.get(
+        `/api/notifications?userId=${userId}`
+      );
+
+      // Handle different response structures
+      let data = response.data;
+
+      // If the response has a data property, use that
+      if (data && typeof data === "object" && "data" in data) {
+        data = data.data;
+      }
+
+      // Ensure we return an array
+      if (!Array.isArray(data)) {
+        console.warn("Expected array from notifications API, got:", data);
+        return [];
+      }
+
+      return data;
     } catch (error) {
       throw handleApiError(error);
     }
@@ -37,7 +69,7 @@ export const notificationApi = {
 
   findOne: async (id: number): Promise<Notification> => {
     try {
-      const response = await apiClient.get(`/notifications/${id}`);
+      const response = await apiClient.get(`/api/notifications/${id}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -49,7 +81,7 @@ export const notificationApi = {
     data: Partial<Notification>
   ): Promise<Notification> => {
     try {
-      const response = await apiClient.patch(`/notifications/${id}`, data);
+      const response = await apiClient.patch(`/api/notifications/${id}`, data);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -58,7 +90,9 @@ export const notificationApi = {
 
   markAsRead: async (id: number): Promise<Notification> => {
     try {
-      const response = await apiClient.patch(`/notifications/${id}/mark-read`);
+      const response = await apiClient.patch(
+        `/api/notifications/${id}/mark-read`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -67,7 +101,7 @@ export const notificationApi = {
 
   markAllAsRead: async (userId: number): Promise<void> => {
     try {
-      await apiClient.patch(`/notifications/mark-all-read/${userId}`);
+      await apiClient.patch(`/api/notifications/mark-all-read/${userId}`);
     } catch (error) {
       throw handleApiError(error);
     }
@@ -76,7 +110,7 @@ export const notificationApi = {
   getUnreadCount: async (userId: number): Promise<number> => {
     try {
       const response = await apiClient.get(
-        `/notifications/unread-count/${userId}`
+        `/api/notifications/unread-count/${userId}`
       );
       return response.data;
     } catch (error) {
@@ -86,7 +120,7 @@ export const notificationApi = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      await apiClient.delete(`/notifications/${id}`);
+      await apiClient.delete(`/api/notifications/${id}`);
     } catch (error) {
       throw handleApiError(error);
     }

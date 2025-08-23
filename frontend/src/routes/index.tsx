@@ -189,7 +189,6 @@ const HealthcareLanding: React.FC = () => {
     altText?: string;
   }> = ({
     className = "",
-    variant = "purple",
     imageSrc = "/Purple%20robot.jpg",
     altText = "Healthcare Robot Assistant",
   }) => (
@@ -218,7 +217,6 @@ const HealthcareLanding: React.FC = () => {
     altText?: string;
   }> = ({
     className = "",
-    variant = "purple",
     imageSrc = "/download.jpg",
     altText = "Healthcare Robot Assistant",
   }) => (

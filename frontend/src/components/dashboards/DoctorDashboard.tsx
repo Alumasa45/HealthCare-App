@@ -72,7 +72,6 @@ const DoctorDashboard: React.FC = () => {
     useState(false);
   const [selectedAppointmentForRecord, setSelectedAppointmentForRecord] =
     useState<ExtendedAppointment | null>(null);
-  const [resolvedDoctorId, setResolvedDoctorId] = useState<number | null>(null);
 
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
   const [editingScheduleId, setEditingScheduleId] = useState<number | null>(
@@ -118,15 +117,6 @@ const DoctorDashboard: React.FC = () => {
           }
         }
 
-        // Set the resolved Doctor_id for use in modals
-        if (doctorId) {
-          setResolvedDoctorId(doctorId);
-        } else {
-          console.warn("Doctor ID not found:", user);
-          setError("Doctor ID not found. Please contact support.");
-          return;
-        }
-
         if (!doctorId) {
           console.warn("Doctor ID not found:", user);
           setError("Doctor ID not found. Please contact support.");
@@ -148,7 +138,16 @@ const DoctorDashboard: React.FC = () => {
 
         setAppointmentSlots(slotData);
         setSchedules(scheduleData);
-        setAppointments(appointmentData);
+        // Ensure appointmentData is always an array
+        const appointmentsArray: ExtendedAppointment[] = Array.isArray(
+          appointmentData
+        )
+          ? appointmentData
+          : appointmentData
+          ? [appointmentData]
+          : [];
+
+        setAppointments(appointmentsArray);
         setMedicalRecords(medicalRecordsData);
 
         // Extract unique patients from appointments
@@ -156,34 +155,13 @@ const DoctorDashboard: React.FC = () => {
           number,
           ExtendedAppointment["patient"]
         >();
-
-        // Add validation for appointmentData
-        console.log("🔍 Appointment data structure:", appointmentData);
-        console.log("🔍 Is array?", Array.isArray(appointmentData));
-
-        // Ensure appointmentData is an array
-        const appointmentsArray = Array.isArray(appointmentData)
-          ? appointmentData
-          : appointmentData &&
-            typeof appointmentData === "object" &&
-            "data" in appointmentData &&
-            Array.isArray((appointmentData as any).data)
-          ? (appointmentData as any).data
-          : [];
-
-        console.log(
-          "🔍 Using appointments array:",
-          appointmentsArray.length,
-          "items"
-        );
-
-        (appointmentsArray as ExtendedAppointment[]).forEach((apt) => {
+        appointmentsArray.forEach((apt) => {
           if (
             apt.patient &&
-            typeof apt.Patient_id === "number" &&
-            !uniquePatients.has(apt.Patient_id)
+            typeof apt.patient.Patient_id === "number" &&
+            !uniquePatients.has(apt.patient.Patient_id)
           ) {
-            uniquePatients.set(apt.Patient_id, apt.patient);
+            uniquePatients.set(apt.patient.Patient_id, apt.patient);
           }
         });
         setPatients(
@@ -201,7 +179,7 @@ const DoctorDashboard: React.FC = () => {
               Address: "",
               Gender: "Other",
               Account_Status: "Active", // Default or fetch actual status if available
-              Created_at: new Date(), // Default or fetch actual date if available
+              Created_at: new Date(),
             }))
         );
 
@@ -580,30 +558,47 @@ const DoctorDashboard: React.FC = () => {
     });
   };
 
-  const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return "N/A";
+    try {
+      const dateObj = typeof date === "string" ? new Date(date) : date;
+      if (!(dateObj instanceof Date) || isNaN(dateObj.getTime()))
+        return "Invalid Date";
+      return dateObj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid Date";
+    }
   };
 
-  const formatTime = (date: Date | string) => {
-    if (typeof date === "string") {
-      if (date.match(/^\d{2}:\d{2}:\d{2}$/)) {
-        return date.slice(0, 5);
+  const formatTime = (date: Date | string | null | undefined) => {
+    if (!date) return "N/A";
+    try {
+      if (typeof date === "string") {
+        if (date.match(/^\d{2}:\d{2}:\d{2}$/)) {
+          return date.slice(0, 5);
+        }
+        const dateObj = new Date(date);
+        if (isNaN(dateObj.getTime())) return "Invalid Time";
+        return dateObj.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
-      const dateObj = new Date(date);
-      return dateObj.toLocaleTimeString("en-US", {
+      if (!(date instanceof Date) || isNaN(date.getTime()))
+        return "Invalid Time";
+      return date.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       });
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return "Invalid Time";
     }
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const renderAppointments = () => {
@@ -717,129 +712,135 @@ const DoctorDashboard: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredAppointments.map((appointment) => (
-              <div
-                key={appointment.Appointment_id}
-                className="bg-white dark:bg-gray-800 light-purple:bg-light-purple-50 light-purple:border-light-purple-200 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200"
-              >
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium">
-                        Patient:{" "}
-                        {appointment.patient?.user?.First_Name || "Patient"}{" "}
-                        {appointment.patient?.user?.Last_Name ||
-                          `#${appointment.Patient_id}`}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span>
-                        Date: {formatDate(appointment.Appointment_Date)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span>
-                        Time: {formatTime(appointment.Appointment_Time)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Type: </span>
-                      <span>{appointment.Appointment_Type}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Reason: </span>
-                      <span>{appointment.Reason_For_Visit}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Status: </span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          appointment.Status === "Completed"
-                            ? "bg-green-100 text-green-800"
-                            : appointment.Status === "Cancelled" ||
-                              appointment.Status === "No Show"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-purple-100 text-purple-800"
-                        }`}
-                      >
-                        {appointment.Status}
-                      </span>
-                    </div>
-                    {appointment.Notes && (
-                      <div>
-                        <span className="font-medium">Notes: </span>
-                        <span className="text-gray-600">
-                          {appointment.Notes}
+            {filteredAppointments
+              .filter(
+                (appointment) => appointment && appointment.Appointment_id
+              )
+              .map((appointment) => (
+                <div
+                  key={appointment.Appointment_id}
+                  className="bg-white dark:bg-gray-800 light-purple:bg-light-purple-50 light-purple:border-light-purple-200 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-500" />
+                        <span className="font-medium">
+                          Patient:{" "}
+                          {appointment.patient?.user?.First_Name || "Patient"}{" "}
+                          {appointment.patient?.user?.Last_Name ||
+                            `#${appointment.Patient_id}`}
                         </span>
                       </div>
-                    )}
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <span>
+                          Date: {formatDate(appointment.Appointment_Date)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <span>
+                          Time: {formatTime(appointment.Appointment_Time)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Type: </span>
+                        <span>{appointment.Appointment_Type}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Reason: </span>
+                        <span>{appointment.Reason_For_Visit}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Status: </span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            appointment.Status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : appointment.Status === "Cancelled" ||
+                                appointment.Status === "No Show"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {appointment.Status}
+                        </span>
+                      </div>
+                      {appointment.Notes && (
+                        <div>
+                          <span className="font-medium">Notes: </span>
+                          <span className="text-gray-600">
+                            {appointment.Notes}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex flex-col gap-2 min-w-[150px]">
-                    {["Scheduled", "Confirmed"].includes(
-                      appointment.Status
-                    ) && (
-                      <>
-                        <button
-                          className="flex items-center justify-center gap-2 px-3 py-2 bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 hover:text-green-800 transition-colors disabled:opacity-50"
-                          onClick={() =>
-                            handleUpdateStatus(
-                              appointment.Appointment_id,
-                              "Confirmed"
-                            )
-                          }
-                          disabled={
-                            loading || appointment.Status === "Confirmed"
-                          }
-                        >
-                          <Check className="h-4 w-4" />
-                          Confirm
-                        </button>
-                        <button
-                          className="flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 light-purple:bg-healthcare-100 text-purple-700 light-purple:text-healthcare-800 border border-purple-200 light-purple:border-healthcare-300 rounded-md hover:bg-purple-100 light-purple:hover:bg-healthcare-200 hover:text-purple-800 light-purple:hover:text-healthcare-900 transition-colors disabled:opacity-50"
-                          onClick={() =>
-                            handleUpdateStatus(
-                              appointment.Appointment_id,
-                              "Completed"
-                            )
-                          }
-                          disabled={loading}
-                        >
-                          <Check className="h-4 w-4" />
-                          Complete
-                        </button>
-                        <button
-                          className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-800 transition-colors disabled:opacity-50"
-                          onClick={() =>
-                            handleUpdateStatus(
-                              appointment.Appointment_id,
-                              "Cancelled"
-                            )
-                          }
-                          disabled={loading}
-                        >
-                          <X className="h-4 w-4" />
-                          Cancel
-                        </button>
-                      </>
-                    )}
-                    {appointment.Status === "Completed" && (
-                      <div className="text-center text-green-600 font-medium py-4">
-                        Appointment completed
-                      </div>
-                    )}
-                    {["Cancelled", "No Show"].includes(appointment.Status) && (
-                      <div className="text-center text-red-600 font-medium py-4">
-                        Appointment {appointment.Status.toLowerCase()}
-                      </div>
-                    )}
+                    <div className="flex flex-col gap-2 min-w-[150px]">
+                      {["Scheduled", "Confirmed"].includes(
+                        appointment.Status
+                      ) && (
+                        <>
+                          <button
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 hover:text-green-800 transition-colors disabled:opacity-50"
+                            onClick={() =>
+                              handleUpdateStatus(
+                                appointment.Appointment_id,
+                                "Confirmed"
+                              )
+                            }
+                            disabled={
+                              loading || appointment.Status === "Confirmed"
+                            }
+                          >
+                            <Check className="h-4 w-4" />
+                            Confirm
+                          </button>
+                          <button
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 light-purple:bg-healthcare-100 text-purple-700 light-purple:text-healthcare-800 border border-purple-200 light-purple:border-healthcare-300 rounded-md hover:bg-purple-100 light-purple:hover:bg-healthcare-200 hover:text-purple-800 light-purple:hover:text-healthcare-900 transition-colors disabled:opacity-50"
+                            onClick={() =>
+                              handleUpdateStatus(
+                                appointment.Appointment_id,
+                                "Completed"
+                              )
+                            }
+                            disabled={loading}
+                          >
+                            <Check className="h-4 w-4" />
+                            Complete
+                          </button>
+                          <button
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-800 transition-colors disabled:opacity-50"
+                            onClick={() =>
+                              handleUpdateStatus(
+                                appointment.Appointment_id,
+                                "Cancelled"
+                              )
+                            }
+                            disabled={loading}
+                          >
+                            <X className="h-4 w-4" />
+                            Cancel
+                          </button>
+                        </>
+                      )}
+                      {appointment.Status === "Completed" && (
+                        <div className="text-center text-green-600 font-medium py-4">
+                          Appointment completed
+                        </div>
+                      )}
+                      {["Cancelled", "No Show"].includes(
+                        appointment.Status
+                      ) && (
+                        <div className="text-center text-red-600 font-medium py-4">
+                          Appointment {appointment.Status.toLowerCase()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
 
@@ -1295,17 +1296,8 @@ const DoctorDashboard: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => {
-              if (!resolvedDoctorId) {
-                toast.error(
-                  "Doctor information not loaded. Please wait or refresh the page."
-                );
-                return;
-              }
-              setIsCreatePrescriptionOpen(true);
-            }}
-            disabled={!resolvedDoctorId}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setIsCreatePrescriptionOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Create Prescription
@@ -1322,17 +1314,8 @@ const DoctorDashboard: React.FC = () => {
               Start by creating your first prescription for a patient
             </p>
             <button
-              onClick={() => {
-                if (!resolvedDoctorId) {
-                  toast.error(
-                    "Doctor information not loaded. Please wait or refresh the page."
-                  );
-                  return;
-                }
-                setIsCreatePrescriptionOpen(true);
-              }}
-              disabled={!resolvedDoctorId}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setIsCreatePrescriptionOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto transition-colors"
             >
               <Plus className="h-4 w-4" />
               Create First Prescription
@@ -1453,7 +1436,9 @@ const DoctorDashboard: React.FC = () => {
                           Patient ID: {record.Patient_id}
                         </h5>
                         <span className="text-sm text-gray-500">
-                          {new Date(record.Visit_Date).toLocaleDateString()}
+                          {record.Visit_Date
+                            ? new Date(record.Visit_Date).toLocaleDateString()
+                            : "Date N/A"}
                         </span>
                       </div>
                       <p className="text-sm">
@@ -1473,7 +1458,11 @@ const DoctorDashboard: React.FC = () => {
                       {record.Follow_up_Required && (
                         <p className="text-sm text-blue-600">
                           <strong>Follow-up required:</strong>{" "}
-                          {new Date(record.Follow_Up_Date).toLocaleDateString()}
+                          {record.Follow_Up_Date
+                            ? new Date(
+                                record.Follow_Up_Date
+                              ).toLocaleDateString()
+                            : "Date N/A"}
                         </p>
                       )}
                     </div>
@@ -1551,28 +1540,29 @@ const DoctorDashboard: React.FC = () => {
       <div className="relative z-10 mb-8">{renderContent()}</div>
 
       <CreatePrescriptionModal
-        isOpen={isCreatePrescriptionOpen && resolvedDoctorId !== null}
+        isOpen={isCreatePrescriptionOpen}
         onClose={() => setIsCreatePrescriptionOpen(false)}
-        Doctor_id={resolvedDoctorId || 0}
+        Doctor_id={doctor?.Doctor_id || 0}
         onSuccess={() => {
           toast.success("Prescription created successfully!");
         }}
       />
 
       <MedicalRecordModal
-        isOpen={isMedicalRecordModalOpen && resolvedDoctorId !== null}
+        isOpen={isMedicalRecordModalOpen}
         onClose={() => {
           setIsMedicalRecordModalOpen(false);
           setSelectedAppointmentForRecord(null);
         }}
         patientId={selectedAppointmentForRecord?.Patient_id || 0}
-        doctorId={resolvedDoctorId || 0}
+        doctorId={user?.Doctor_id || doctor?.Doctor_id || 0}
         appointmentId={selectedAppointmentForRecord?.Appointment_id}
         onSuccess={() => {
           // Refresh medical records
           recordsApi.findAll().then((records) => {
             const doctorRecords = records.filter(
-              (record) => record.Doctor_id === resolvedDoctorId
+              (record) =>
+                record.Doctor_id === (user?.Doctor_id || doctor?.Doctor_id)
             );
             setMedicalRecords(doctorRecords);
           });

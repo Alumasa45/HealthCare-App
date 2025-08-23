@@ -7,7 +7,13 @@ import React, {
 } from "react";
 import { useAuth } from "./AuthContext";
 import { getConversations, createConversation } from "../api/conversations";
-import { getMessages, createMessage, markMessageAsRead } from "../api/messages";
+import {
+  getMessages,
+  createMessage,
+  markMessageAsRead,
+  verifyMessageDependencies,
+} from "../api/messages";
+import type { CreateMessageDto } from "../api/interfaces/message";
 import { createSender } from "../api/senders";
 import { ConversationType } from "../api/interfaces/conversation";
 
@@ -20,10 +26,6 @@ interface Message {
   status: "sending" | "sent" | "delivered" | "read" | "error";
   attachmentUrl?: string;
   attachmentName?: string;
-}
-
-interface Userr_Type {
-  User_Type: "Patient" | "Doctor" | "Pharmacist" | "Admin";
 }
 
 interface User {
@@ -66,6 +68,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastMessageTime, setLastMessageTime] = useState<number>(0);
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -231,7 +234,47 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const sendMessage = async (content: string, file?: File) => {
-    if (!selectedChatId || !user?.User_id) return;
+    if (!selectedChatId || !user?.User_id) {
+      console.error("Cannot send message: missing selectedChatId or user", {
+        selectedChatId,
+        userId: user?.User_id,
+      });
+      return;
+    }
+
+    // Validate user object
+    if (typeof user.User_id !== "number" || user.User_id <= 0) {
+      console.error("Invalid user ID:", user.User_id);
+      console.error("Full user object:", user);
+      return;
+    }
+
+    // Additional check: ensure User_id is an integer
+    if (!Number.isInteger(user.User_id)) {
+      console.error("User ID is not an integer:", user.User_id);
+      return;
+    }
+
+    // Validate input
+    if (!content.trim() && !file) {
+      console.error("Cannot send empty message without attachment");
+      return;
+    }
+
+    // Validate conversation ID
+    const conversationId = parseInt(selectedChatId);
+    if (isNaN(conversationId) || conversationId <= 0) {
+      console.error("Invalid conversation ID:", selectedChatId);
+      return;
+    }
+
+    // Rate limiting: prevent sending messages too quickly (max 1 per second)
+    const now = Date.now();
+    if (now - lastMessageTime < 1000) {
+      console.warn("Rate limit: Please wait before sending another message");
+      return;
+    }
+    setLastMessageTime(now);
 
     const hasAttachment = !!file;
 
@@ -249,19 +292,71 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     setMessages((prev) => [...prev, tempMessage]);
 
     try {
-      const messageData: any = {
-        Conversation_id: parseInt(selectedChatId),
+      // Debug the IDs we're about to use
+      console.log("=== Message Creation Debug ===");
+      console.log("Selected Chat ID (string):", selectedChatId);
+      console.log("Parsed Conversation ID:", conversationId);
+      console.log("User ID:", user.User_id);
+      console.log("User object:", user);
+      console.log("==============================");
+
+      // Verify that the conversation and user exist before attempting to create message
+      console.log("🔍 Verifying message dependencies...");
+      const verification = await verifyMessageDependencies(
+        conversationId,
+        user.User_id
+      );
+
+      if (!verification.conversationExists || !verification.userExists) {
+        console.error(
+          "❌ Dependencies verification failed:",
+          verification.errors
+        );
+        throw new Error(
+          `Cannot send message: ${verification.errors.join(", ")}`
+        );
+      }
+
+      console.log("✅ All dependencies verified successfully");
+
+      // Create and validate message data
+      const messageData: CreateMessageDto = {
+        Conversation_id: conversationId,
         Sender_id: user.User_id,
-        Content: content,
-        Message_Type: ConversationType.direct || "direct",
+        Content: content.trim(),
+        Message_Type: ConversationType.direct,
       };
 
+      // Add attachment if present
       if (hasAttachment && file) {
+        // For now, we'll handle file upload as a simple attachment URL
+        // In a real implementation, you'd upload the file first and get a URL
         const fakeAttachmentUrl = `uploads/${file.name}`;
         messageData.Attachment_Url = fakeAttachmentUrl;
       }
 
+      // Final validation before sending
+      if (!messageData.Content && !messageData.Attachment_Url) {
+        throw new Error("Message must have either content or attachment");
+      }
+
+      console.log("Sending message with data:", {
+        ...messageData,
+        Content:
+          messageData.Content.substring(0, 50) +
+          (messageData.Content.length > 50 ? "..." : ""),
+        userInfo: {
+          userId: user.User_id,
+          userType: typeof user.User_id,
+        },
+      });
+
       const response = await createMessage(messageData);
+      console.log("Message sent successfully:", {
+        messageId: response.Message_id,
+        conversationId: response.Conversation_id,
+      });
+
       const realMessage: Message = {
         id: response.Message_id?.toString() || `msg-${Date.now()}`,
         Sender_id:
@@ -306,9 +401,50 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
           console.error("Error marking message as read:", error);
         }
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
 
+      // Provide more detailed error information
+      if (error.response) {
+        console.error("Server responded with error:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        });
+
+        // Show user-friendly error message based on status code
+        let errorMessage = "Failed to send message";
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "Invalid message data. Please check your input.";
+            break;
+          case 401:
+            errorMessage =
+              "You are not authorized to send messages. Please log in again.";
+            break;
+          case 403:
+            errorMessage =
+              "You don't have permission to send messages in this conversation.";
+            break;
+          case 404:
+            errorMessage =
+              "Conversation not found. Please refresh and try again.";
+            break;
+          case 500:
+            errorMessage = "Server error. Please try again later.";
+            break;
+          default:
+            errorMessage = `Error: ${error.response.status} - ${error.response.statusText}`;
+        }
+
+        console.warn("User-friendly error message:", errorMessage);
+      } else if (error.request) {
+        console.error("Network error - no response received:", error.request);
+      } else {
+        console.error("Error setting up request:", error.message);
+      }
+
+      // Update the temp message to show error state
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempMessage.id ? { ...msg, status: "error" } : msg

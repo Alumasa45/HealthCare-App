@@ -23,6 +23,7 @@ interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
+  isWebSocketConnected: boolean;
   addNotification: (
     notification: Omit<Notification, "id" | "timestamp" | "read">
   ) => void;
@@ -45,6 +46,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
   useEffect(() => {
     // Load notifications from localStorage
@@ -69,81 +71,158 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
+  // WebSocket connection for real-time notifications
+  // This is optional functionality - the app works fine without it
   useEffect(() => {
     if (!user?.User_id) return;
 
-    // Determine WebSocket URL based on API client configuration
-    const wsBaseUrl = "https://healthcare-app-60pj.onrender.com"
-      .replace("https://", "wss://")
-      .replace("http://", "ws://");
+    let ws: WebSocket | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimeout: NodeJS.Timeout;
 
-    // Set up WebSocket connection for real-time notifications
-    const ws = new WebSocket(
-      `${wsBaseUrl}/notifications?userId=${user.User_id}`
-    );
-
-    ws.onopen = () => {
-      console.log("🔔 Connected to notification service");
-    };
-
-    ws.onmessage = (event) => {
+    const connectWebSocket = () => {
       try {
-        const notification = JSON.parse(event.data);
-        console.log("📨 Received notification:", notification);
-
-        addNotification({
-          title: notification.title,
-          message: notification.message,
-          type: notification.type || "info",
-          userId: notification.userId,
-          appointmentId: notification.appointmentId,
-          patientId: notification.patientId,
-        });
-
-        // Show toast notification
-        switch (notification.type) {
-          case "success":
-            toast.success(notification.title, {
-              description: notification.message,
-            });
-            break;
-          case "warning":
-            toast.warning(notification.title, {
-              description: notification.message,
-            });
-            break;
-          case "error":
-            toast.error(notification.title, {
-              description: notification.message,
-            });
-            break;
-          default:
-            toast.info(notification.title, {
-              description: notification.message,
-            });
+        // Skip if already trying to connect
+        if (ws && ws.readyState === WebSocket.CONNECTING) {
+          console.log("WebSocket connection already in progress...");
+          return;
         }
+
+        // Determine WebSocket URL based on API client configuration
+        const wsBaseUrl = "https://healthcare-app-60pj.onrender.com"
+          .replace("https://", "wss://")
+          .replace("http://", "ws://");
+
+        console.log(
+          `🔌 Attempting WebSocket connection to: ${wsBaseUrl}/notifications?userId=${user.User_id}`
+        );
+
+        // Set up WebSocket connection for real-time notifications
+        ws = new WebSocket(`${wsBaseUrl}/notifications?userId=${user.User_id}`);
+
+        // Set a timeout for connection attempt
+        const connectionTimeout = setTimeout(() => {
+          if (ws && ws.readyState === WebSocket.CONNECTING) {
+            console.warn("WebSocket connection timeout - closing connection");
+            ws.close();
+          }
+        }, 10000); // 10 second timeout
+
+        ws.onopen = () => {
+          console.log("🔔 Connected to notification service");
+          setIsWebSocketConnected(true);
+          reconnectAttempts = 0; // Reset on successful connection
+          clearTimeout(connectionTimeout); // Clear connection timeout
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const notification = JSON.parse(event.data);
+            console.log("📨 Received notification:", notification);
+
+            addNotification({
+              title: notification.title,
+              message: notification.message,
+              type: notification.type || "info",
+              userId: notification.userId,
+              appointmentId: notification.appointmentId,
+              patientId: notification.patientId,
+            });
+
+            // Show toast notification
+            switch (notification.type) {
+              case "success":
+                toast.success(notification.title, {
+                  description: notification.message,
+                });
+                break;
+              case "warning":
+                toast.warning(notification.title, {
+                  description: notification.message,
+                });
+                break;
+              case "error":
+                toast.error(notification.title, {
+                  description: notification.message,
+                });
+                break;
+              default:
+                toast.info(notification.title, {
+                  description: notification.message,
+                });
+            }
+          } catch (error) {
+            console.error("Error parsing notification:", error);
+          }
+        };
+
+        ws.onclose = (event) => {
+          console.log("🔔 Disconnected from notification service", {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+          });
+          setIsWebSocketConnected(false);
+          clearTimeout(connectionTimeout); // Clear connection timeout
+
+          // Only attempt to reconnect if it wasn't a clean close and we haven't exceeded max attempts
+          if (
+            !event.wasClean &&
+            reconnectAttempts < maxReconnectAttempts &&
+            user?.User_id
+          ) {
+            reconnectAttempts++;
+            const delay = Math.min(
+              1000 * Math.pow(2, reconnectAttempts),
+              30000
+            ); // Exponential backoff, max 30s
+
+            console.log(
+              `🔄 Attempting to reconnect to notification service... (attempt ${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms`
+            );
+
+            reconnectTimeout = setTimeout(() => {
+              connectWebSocket();
+            }, delay);
+          } else if (reconnectAttempts >= maxReconnectAttempts) {
+            console.warn(
+              "🚫 Max reconnection attempts reached. WebSocket notifications disabled."
+            );
+            console.info(
+              "📝 Note: App will continue to work normally. Real-time notifications will not be available."
+            );
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket connection error:", error);
+          console.info(
+            "📝 This is normal if the server doesn't support WebSocket notifications yet."
+          );
+          clearTimeout(connectionTimeout); // Clear connection timeout
+
+          // Don't close here, let onclose handle reconnection
+        };
       } catch (error) {
-        console.error("Error parsing notification:", error);
+        console.error("Failed to create WebSocket connection:", error);
+        console.info(
+          "📝 WebSocket notifications are unavailable. App will continue to work normally."
+        );
       }
     };
 
-    ws.onclose = () => {
-      console.log("🔔 Disconnected from notification service");
-
-      // Attempt to reconnect after 5 seconds
-      setTimeout(() => {
-        if (user?.User_id) {
-          console.log("🔄 Attempting to reconnect to notification service...");
-        }
-      }, 5000);
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
+    // Initial connection attempt
+    connectWebSocket();
 
     return () => {
-      ws.close();
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (ws && ws.readyState !== WebSocket.CLOSED) {
+        ws.close(1000, "Component unmounting"); // Clean close
+      }
+      setIsWebSocketConnected(false);
     };
   }, [user?.User_id]);
 
@@ -161,25 +240,38 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
           user.User_id
         );
 
+        console.log("Fetched notifications:", realNotifications);
+
+        // Ensure realNotifications is an array
+        if (!Array.isArray(realNotifications)) {
+          console.warn("Expected notifications array, got:", realNotifications);
+          setNotifications([]);
+          return;
+        }
+
         // Transform backend notifications to local format
-        const transformedNotifications = realNotifications.map((notif) => ({
-          id: notif.Notification_id.toString(),
-          title: notif.Title,
-          message: notif.Message,
-          type:
-            notif.Type === "general"
-              ? ("info" as const)
-              : notif.Type === "prescription"
-              ? ("success" as const)
-              : notif.Type === "appointment"
-              ? ("info" as const)
-              : notif.Type === "billing"
-              ? ("warning" as const)
-              : ("info" as const),
-          timestamp: new Date(notif.Created_at),
-          read: notif.Status === "read",
-          userId: notif.User_id,
-        }));
+        const transformedNotifications = realNotifications
+          .filter((notif) => notif && notif.Notification_id) // Filter out null/undefined or invalid notifications
+          .map((notif) => ({
+            id: notif.Notification_id?.toString() || "unknown",
+            title: notif.Title || "Notification",
+            message: notif.Message || "",
+            type:
+              notif.Type === "general"
+                ? ("info" as const)
+                : notif.Type === "prescription"
+                ? ("success" as const)
+                : notif.Type === "appointment"
+                ? ("info" as const)
+                : notif.Type === "billing"
+                ? ("warning" as const)
+                : ("info" as const),
+            timestamp: notif.Created_at
+              ? new Date(notif.Created_at)
+              : new Date(),
+            read: notif.Status === "read",
+            userId: notif.User_id || user.User_id,
+          }));
 
         setNotifications(transformedNotifications);
       } catch (error) {
@@ -283,6 +375,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const value: NotificationContextType = {
     notifications,
     unreadCount,
+    isWebSocketConnected,
     addNotification,
     markAsRead,
     markAllAsRead,

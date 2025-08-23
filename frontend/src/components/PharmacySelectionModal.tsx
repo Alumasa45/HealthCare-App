@@ -154,10 +154,7 @@ export const PharmacySelectionModal: React.FC<PharmacySelectionModalProps> = ({
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                       <span className="text-sm text-gray-600">
-                        {typeof pharmacy.Rating === "number" &&
-                        !isNaN(pharmacy.Rating)
-                          ? pharmacy.Rating.toFixed(1)
-                          : "N/A"}
+                        {pharmacy.Rating.toFixed(1)}
                       </span>
                     </div>
                   </div>

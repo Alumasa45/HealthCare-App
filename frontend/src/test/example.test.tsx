@@ -1,6 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import React from "react";
 
 // Simple test component
 const TestComponent = () => {
@@ -10,7 +9,7 @@ const TestComponent = () => {
 describe("Test Setup", () => {
   it("should render a component", () => {
     render(<TestComponent />);
-    expect(screen.getByText("Hello World")).toBeInTheDocument();
+    expect(screen.getByText("Hello World")).toBeDefined();
   });
 
   it("should have vi available as a mock function", () => {

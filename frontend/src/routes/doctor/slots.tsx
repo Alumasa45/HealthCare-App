@@ -27,17 +27,17 @@ function DoctorSlots() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Doctor Appointment Management</h1>
-      
+
       <Tabs defaultValue="appointments" className="mb-8">
         <TabsList className="mb-4">
           <TabsTrigger value="appointments">Manage Appointments</TabsTrigger>
           <TabsTrigger value="slots">Manage Slots</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="appointments">
           <DoctorAppointmentManagement />
         </TabsContent>
-        
+
         <TabsContent value="slots">
           <DoctorSlotManagement />
         </TabsContent>
@@ -47,7 +47,7 @@ function DoctorSlots() {
 }
 
 export const Route = createFileRoute("/doctor/slots")({
-  beforeLoad: ({ context }) => {
+  beforeLoad: () => {
     // Add authentication check here
     const token = localStorage.getItem("authToken");
     const userData = localStorage.getItem("userData");

@@ -3,12 +3,7 @@ import apiClient from "./apiClient";
 import { handleApiError } from "./errorUtils";
 
 export const prescriptionapi = {
-  create: async (
-    prescriptionData: Omit<
-      Prescription,
-      "Prescription_id" | "Created_at" | "Updated_at" | "doctor" | "patient"
-    >
-  ) => {
+  create: async (prescriptionData: Prescription) => {
     try {
       const response = await apiClient.post("/prescriptions", prescriptionData);
       return response.data;
@@ -29,7 +24,7 @@ export const prescriptionapi = {
   findByPatientId: async (patientId: number): Promise<Prescription[]> => {
     try {
       const response = await apiClient.get(
-        `/prescriptions/patient/${patientId}`
+        `/api/prescriptions/patient/${patientId}`
       );
       return response.data;
     } catch (error) {
@@ -39,7 +34,9 @@ export const prescriptionapi = {
 
   findOne: async (Prescription_id: string): Promise<Prescription | null> => {
     try {
-      const response = await apiClient.get(`/prescriptions/${Prescription_id}`);
+      const response = await apiClient.get(
+        `/api/prescriptions/${Prescription_id}`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -52,7 +49,7 @@ export const prescriptionapi = {
   ): Promise<Prescription | null> => {
     try {
       const response = await apiClient.patch(
-        `/prescriptions/${Prescription_id}`,
+        `/api/prescriptions/${Prescription_id}`,
         prescriptionData
       );
       return response.data;
@@ -63,7 +60,7 @@ export const prescriptionapi = {
 
   delete: async (Prescription_id: string): Promise<boolean> => {
     try {
-      await apiClient.delete(`/prescriptions/${Prescription_id}`);
+      await apiClient.delete(`/api/prescriptions/${Prescription_id}`);
       return true;
     } catch (error) {
       throw handleApiError(error);

@@ -16,7 +16,7 @@ export const patientApi = {
 
   getByUserId: async (userId: number): Promise<Patient> => {
     try {
-      const response = await apiClient.get(`/patients/user/${userId}`);
+      const response = await apiClient.get(`/api/patients/user/${userId}`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -29,7 +29,7 @@ export const patientApi = {
   ): Promise<Patient> => {
     try {
       const response = await apiClient.patch(
-        `/patients/${patientId}`,
+        `/api/patients/${patientId}`,
         patientData
       );
       return response.data;
@@ -42,7 +42,7 @@ export const patientApi = {
     patientData: Omit<Patient, "Patient_id">
   ): Promise<Patient> => {
     try {
-      const response = await apiClient.post("/patients", patientData);
+      const response = await apiClient.post("/api/patients", patientData);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
