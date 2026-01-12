@@ -112,25 +112,39 @@ async function bootstrap() {
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
 
   app.enableCors({
-    origin: isProduction
-      ? [
-          'https://healthcare-app-60pj.onrender.com', // Your deployed backend (for Swagger)
-          'https://your-frontend-deployment-url.com', // Your deployed frontend
-          'http://localhost:3000', // Allow local development
-          'http://127.0.0.1:3000', // Alternative localhost
-          'http://127.0.0.1:5500', // Live Server for testing
-          'http://localhost:5500', // Alternative Live Server
-        ]
-      : [
-          'http://localhost:3000', // React frontend (development)
-          'http://localhost:3001', // Backend/Swagger
-          'http://127.0.0.1:3001', // Alternative localhost
-          'http://localhost:5173', // Vite dev server
-          'http://127.0.0.1:3000', // Alternative localhost for frontend
-          'http://127.0.0.1:5500', // Live Server for testing
-          'http://localhost:5500', // Alternative Live Server
-          'https://healthcare-app-60pj.onrender.com', // Also allow production URL in dev
-        ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, Postman, or same-origin Swagger UI)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const allowedOrigins = isProduction
+        ? [
+            'https://healthcare-app-60pj.onrender.com', // Your deployed backend (for Swagger)
+            'https://your-frontend-deployment-url.com', // Your deployed frontend
+            'http://localhost:3000', // Allow local development
+            'http://127.0.0.1:3000', // Alternative localhost
+            'http://127.0.0.1:5500', // Live Server for testing
+            'http://localhost:5500', // Alternative Live Server
+          ]
+        : [
+            'http://localhost:3000', // React frontend (development)
+            'http://localhost:3001', // Backend/Swagger
+            'http://127.0.0.1:3001', // Alternative localhost
+            'http://localhost:5173', // Vite dev server
+            'http://127.0.0.1:3000', // Alternative localhost for frontend
+            'http://127.0.0.1:5500', // Live Server for testing
+            'http://localhost:5500', // Alternative Live Server
+            'https://healthcare-app-60pj.onrender.com', // Also allow production URL in dev
+          ];
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Origin ${origin} not allowed`);
+        callback(null, true); // Still allow but log warning - change to false in strict production
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -139,10 +153,14 @@ async function bootstrap() {
       'Origin',
       'X-Requested-With',
       'Access-Control-Allow-Headers',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers',
     ],
+    exposedHeaders: ['Access-Control-Allow-Origin'],
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
+    maxAge: 86400, // Cache preflight requests for 24 hours
   });
 
   await app.listen(PORT);
