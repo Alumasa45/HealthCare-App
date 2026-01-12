@@ -1556,7 +1556,6 @@ const DoctorDashboard: React.FC = () => {
         }}
         patientId={selectedAppointmentForRecord?.Patient_id || 0}
         doctorId={user?.Doctor_id || doctor?.Doctor_id || 0}
-        appointmentId={selectedAppointmentForRecord?.Appointment_id}
         onSuccess={() => {
           // Refresh medical records
           recordsApi.findAll().then((records) => {

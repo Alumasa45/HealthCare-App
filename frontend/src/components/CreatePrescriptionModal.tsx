@@ -187,7 +187,7 @@ export const CreatePrescriptionModal: React.FC<
         Notes: formData.Notes,
       };
 
-      const result = await prescriptionapi.create(prescriptionData);
+      await prescriptionapi.create(prescriptionData);
 
       toast.success("Prescription created and sent to patient successfully!");
       onSuccess?.();

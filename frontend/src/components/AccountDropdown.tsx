@@ -17,20 +17,16 @@ import { toast } from "sonner";
 export function AccountDropdown() {
   const { user, logout } = useAuth();
   const [patientData, setPatientData] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatientData = async () => {
       if (user?.User_id && user.User_Type === "Patient") {
         try {
-          setLoading(true);
           const data = await patientApi.getByUserId(user.User_id);
           setPatientData(data);
         } catch (error) {
           console.error("Error fetching patient data:", error);
-        } finally {
-          setLoading(false);
         }
       }
     };
@@ -70,7 +66,7 @@ export function AccountDropdown() {
           <>
             <DropdownMenuItem disabled className="text-xs">
               <div className="flex flex-col">
-                <span>Blood Type: {patientData.Blood_Type || "Not set"}</span>
+                <span>Blood Type: {patientData.Blood_Group || "Not set"}</span>
                 {patientData.Insurance_Provider && (
                   <span>Insurance: {patientData.Insurance_Provider}</span>
                 )}

@@ -7,8 +7,8 @@ import { slotApi } from "@/api/appointmentSlots";
 import { appointmentApi } from "@/api/appointments";
 import { patientApi } from "@/api/patients";
 import { toast } from "sonner";
-import { format, parseISO, isAfter, addDays } from "date-fns";
-import { CalendarIcon, Clock, User, CheckCircle } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { CalendarIcon, User, CheckCircle } from "lucide-react";
 
 import {
   Sheet,
@@ -22,7 +22,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form-label";
 
 export enum AppointmentType {
@@ -57,16 +56,6 @@ interface Doctor {
   Last_Name?: string;
 }
 
-interface Schedule {
-  Schedule_id: number;
-  Doctor_id: number;
-  Day_Of_The_Week: string;
-  Start_Time: string;
-  End_Time: string;
-  Slot_Duration: number;
-  Is_Active: boolean;
-}
-
 interface Slot {
   Slot_id: number;
   Doctor_id: number;
@@ -92,7 +81,7 @@ export function AppointmentBooking() {
   const { addSessionItem } = useSessionBilling();
   const [isOpen, setIsOpen] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [schedules, setSchedules] = useState<any[]>([]);
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");

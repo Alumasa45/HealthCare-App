@@ -13,7 +13,6 @@ interface MedicalRecordModalProps {
   onClose: () => void;
   patientId: number;
   doctorId: number;
-  appointmentId?: number;
   onSuccess?: () => void;
 }
 
@@ -22,7 +21,6 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
   onClose,
   patientId,
   doctorId,
-  appointmentId,
   onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);

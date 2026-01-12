@@ -97,7 +97,6 @@ const AdminDashboard = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [availableDoctors, setAvailableDoctors] = useState<User[]>([]);
 
   // Form states for user creation
   const [newUser, setNewUser] = useState({
@@ -460,7 +459,6 @@ const AdminDashboard = () => {
       });
 
       // Refresh data
-      await fetchAllData();
       await fetchAvailableUsers();
       await fetchAvailableDoctors();
 

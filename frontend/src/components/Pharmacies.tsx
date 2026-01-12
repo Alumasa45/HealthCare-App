@@ -156,11 +156,8 @@ const Pharmacies = () => {
 
   // Add states for editing and viewing
   const [isEditMedicineOpen, setIsEditMedicineOpen] = useState(false);
-
   const [isViewMedicineOpen, setIsViewMedicineOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
-  const [editingInventory, setEditingInventory] =
-    useState<PharmacyInventory | null>(null);
   const [viewingMedicine, setViewingMedicine] = useState<Medicine | null>(null);
 
   const [newInventoryItem, setNewInventoryItem] =
@@ -390,8 +387,9 @@ const Pharmacies = () => {
   };
 
   const handleEditInventory = (inventoryItem: PharmacyInventory) => {
-    setEditingInventory(inventoryItem);
-    setIsEditInventoryOpen(true);
+    // Handle inventory editing logic here
+    console.log('Editing inventory item:', inventoryItem);
+    setIsAddInventoryOpen(true);
   };
 
   const handleDeleteInventory = async (inventoryId: number) => {
@@ -432,8 +430,6 @@ const Pharmacies = () => {
       setLoading(false);
     }
   };
-
-
 
   const handleAddMedicine = async (e: React.FormEvent) => {
     e.preventDefault();

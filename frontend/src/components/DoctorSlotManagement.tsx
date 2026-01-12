@@ -7,9 +7,6 @@ import { doctorApi } from "@/api/doctors";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import {
-  ChevronDownIcon,
-  Plus,
-  Trash2,
   Calendar as CalendarIcon,
   User as UserIcon,
   Clock,
@@ -18,15 +15,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form-label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Popover,
@@ -119,7 +108,6 @@ export function DoctorSlotManagement() {
   const [slots, setSlots] = useState<any[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("slots");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
