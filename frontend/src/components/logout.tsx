@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronsUpDown, LogOut, User as UserIcon, Settings } from "lucide-react";
+import { ChevronsUpDown, LogOut, User as UserIcon, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -26,19 +26,15 @@ export function NavUser() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(false);
   
   useEffect(() => {
     const fetchPatientData = async () => {
       if (user?.User_id && user.User_Type === "Patient") {
         try {
-          setLoading(true);
           const data = await patientApi.getByUserId(user.User_id);
           setPatientData(data);
         } catch (error) {
           console.error("Error fetching patient data:", error);
-        } finally {
-          setLoading(false);
         }
       }
     };
@@ -102,7 +98,9 @@ export function NavUser() {
                   <DropdownMenuItem disabled className="opacity-70">
                     <div className="flex flex-col w-full">
                       <span className="font-medium">Patient Information</span>
-                      <span className="text-xs">Blood Type: {patientData.Blood_Type || "Not set"}</span>
+                      {patientData.Blood_Group && (
+                        <span className="text-xs">Blood Type: {patientData.Blood_Group}</span>
+                      )}
                       {patientData.Insurance_Provider && (
                         <span className="text-xs">Insurance: {patientData.Insurance_Provider}</span>
                       )}

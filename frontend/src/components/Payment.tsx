@@ -19,9 +19,7 @@ const PayWithPaystack = ({ email, amount, onSuccess, billId }: PayProps) => {
     () => `ref-${Date.now()}-${Math.random().toString(36).substring(7)}`
   );
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "manual">(
-    "paystack"
-  );
+
 
   const componentProps = {
     email,

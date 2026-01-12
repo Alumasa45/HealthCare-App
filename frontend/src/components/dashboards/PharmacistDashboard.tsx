@@ -14,18 +14,9 @@ import {
   Building2,
   ShoppingCart,
   Plus,
-  Clock,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -266,6 +257,270 @@ const PharmacistDashBoard = () => {
     });
   };
 
+  const handleCreatePharmacy = async () => {
+    if (!selectedPharmacist) {
+      toast.error("Please select a pharmacist");
+      return;
+    }
+
+    if (!newPharmacy.Pharmacy_Name || !newPharmacy.License_Number) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      await pharmacyApi.create({
+        ...newPharmacy,
+        User_id: selectedPharmacist.User_id,
+      });
+
+      toast.success("Pharmacy created successfully");
+      setIsSheetOpen(false);
+      setNewPharmacy({
+        User_id: "",
+        Pharmacy_Name: "",
+        License_Number: "",
+        Phone_Number: "",
+        Email: "",
+        Opening_Time: "",
+        Closing_Time: "",
+        Delivery_Available: false,
+        Is_Verified: false,
+        Rating: 0,
+      });
+      setSelectedPharmacist(null);
+
+      // Refresh pharmacies list
+      const updatedPharmacies = await pharmacistApi.getAll();
+      setPharmacies(updatedPharmacies);
+    } catch (error) {
+      console.error("Error creating pharmacy:", error);
+      toast.error("Failed to create pharmacy");
+    }
+  };
+
+  const renderActivity = () => {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  Total Orders
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {orders.length}
+                </p>
+              </div>
+              <ShoppingCart className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  Inventory Items
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {inventory.length}
+                </p>
+              </div>
+              <Package className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  Total Pharmacies
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {pharmacies.length}
+                </p>
+              </div>
+              <Building2 className="h-8 w-8 text-purple-600" />
+            </div>
+          </div>
+        </div>
+
+        {orderStats.length > 0 && (
+          <div className="bg-white dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Order Status Distribution
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={orderStats}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {orderStats.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444"][index % 4]
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderInventory = () => {
+    if (inventoryLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-600">Loading Inventory...</div>
+        </div>
+      );
+    }
+
+    if (inventoryError) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-800">Error: {inventoryError}</div>
+        </div>
+      );
+    }
+
+    if (inventory.length === 0) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-600">No inventory items found</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 dark:bg-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Medicine Name
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Quantity
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Expiry Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+              {inventory.map((item) => (
+                <tr
+                  key={item.Inventory_id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {item.Medicine_id}
+                  </td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {item.Stock_Quantity}
+                  </td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {new Date(item.Expiry_Date).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderOrders = () => {
+    if (ordersLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-600">Loading Orders...</div>
+        </div>
+      );
+    }
+
+    if (ordersError) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-800">Error: {ordersError}</div>
+        </div>
+      );
+    }
+
+    if (orders.length === 0) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-600">No orders found</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 dark:bg-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Order ID
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Status
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-white">
+                  Order Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+              {orders.map((order) => (
+                <tr
+                  key={order.Order_id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {order.Order_id}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        order.Order_Status === "Delivered"
+                          ? "bg-green-100 text-green-800"
+                          : order.Order_Status === "Pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {order.Order_Status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {new Date(order.Order_Date).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   const renderPharmacies = () => {
     if (loading) {
       return (
@@ -290,89 +545,124 @@ const PharmacistDashBoard = () => {
     }
 
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            My Pharmacies ({pharmacies.length})
-          </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {pharmacies.map((pharmacy) => (
+          <div
+            key={pharmacy.Pharmacy_id}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {pharmacy.Pharmacy_Name}
+              </h3>
+              <Building2 className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+              <p>
+                <strong>License:</strong> {pharmacy.License_Number}
+              </p>
+              <p>
+                <strong>Phone:</strong> {pharmacy.Phone_Number}
+              </p>
+              <p>
+                <strong>Email:</strong> {pharmacy.Email}
+              </p>
+              <p>
+                <strong>Hours:</strong> {formatTime(pharmacy.Opening_Time)} -{" "}
+                {formatTime(pharmacy.Closing_Time)}
+              </p>
+              <p>
+                <strong>Delivery:</strong>{" "}
+                {pharmacy.Delivery_Available ? "Available" : "Not Available"}
+              </p>
+              <p>
+                <strong>Rating:</strong> {pharmacy.Rating}/5
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const tabs = [
+    { id: "Activity" as TabType, label: "Activity", icon: Activity },
+    { id: "Inventory" as TabType, label: "Inventory", icon: Package },
+    { id: "Orders" as TabType, label: "Orders", icon: ShoppingCart },
+    { id: "Pharmacies" as TabType, label: "Pharmacies", icon: Building2 },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Pharmacist Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage your pharmacy operations and inventory
+            </p>
+          </div>
+
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button className="bg-purple-500 hover:bg-purple-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Add new Pharmacy
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Pharmacy
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full rounded-lg">
+            <SheetContent className="w-[400px] sm:w-[540px]">
               <SheetHeader>
-                <SheetTitle>Add New Pharmacy</SheetTitle>
+                <SheetTitle>Create New Pharmacy</SheetTitle>
                 <SheetDescription>
-                  Fill in the details to register a new pharmacy.
+                  Add a new pharmacy to the system
                 </SheetDescription>
               </SheetHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4 text-gray-700">
-                  <Label htmlFor="pharmacist-select" className="text-right">
-                    Select Pharmacist *
-                  </Label>
-                  <div className="col-span-3">
-                    {pharmacistsLoading ? (
-                      <div className="text-gray-500">
-                        Loading pharmacists...
-                      </div>
-                    ) : (
-                      <Select
-                        value={selectedPharmacist?.User_id.toString() || ""}
-                        onValueChange={(value) => {
-                          const selected = availablePharmacists.find(
-                            (user) => user.User_id.toString() === value
-                          );
-                          setSelectedPharmacist(selected || null);
-                          setNewPharmacy({
-                            ...newPharmacy,
-                            User_id: value,
-                            Email: selected?.Email || "",
-                            Phone_Number: selected?.Phone_Number || "",
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a pharmacist user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availablePharmacists.length === 0 ? (
-                            <SelectItem value="no-users" disabled>
-                              No available pharmacist users found
-                            </SelectItem>
-                          ) : (
-                            availablePharmacists.map((user) => (
-                              <SelectItem
-                                key={user.User_id}
-                                value={user.User_id.toString()}
-                              >
-                                {user.First_Name} {user.Last_Name} ({user.Email}
-                                )
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    {selectedPharmacist && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        Selected: {selectedPharmacist.First_Name}{" "}
-                        {selectedPharmacist.Last_Name}
-                        <br />
-                        User ID: {selectedPharmacist.User_id}
-                      </div>
-                    )}
-                  </div>
+
+              <div className="space-y-4 mt-6">
+                <div>
+                  <Label htmlFor="pharmacist">Select Pharmacist</Label>
+                  <Select
+                    value={selectedPharmacist?.User_id.toString() || ""}
+                    onValueChange={(value) => {
+                      const pharmacist = availablePharmacists.find(
+                        (p) => p.User_id.toString() === value
+                      );
+                      setSelectedPharmacist(pharmacist || null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a pharmacist" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {pharmacistsLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading pharmacists...
+                        </SelectItem>
+                      ) : availablePharmacists.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No available pharmacists
+                        </SelectItem>
+                      ) : (
+                        availablePharmacists.map((pharmacist) => (
+                          <SelectItem
+                            key={pharmacist.User_id}
+                            value={pharmacist.User_id.toString()}
+                          >
+                            {pharmacist.First_Name} {pharmacist.Last_Name} (
+                            {pharmacist.Email})
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4 text-gray-700">
-                  <Label htmlFor="pharmacy-name" className="text-right">
-                    Name *
-                  </Label>
+
+                <div>
+                  <Label htmlFor="pharmacy_name">Pharmacy Name</Label>
                   <Input
-                    id="pharmacy-name"
+                    id="pharmacy_name"
                     value={newPharmacy.Pharmacy_Name}
                     onChange={(e) =>
                       setNewPharmacy({
@@ -380,16 +670,14 @@ const PharmacistDashBoard = () => {
                         Pharmacy_Name: e.target.value,
                       })
                     }
-                    className="col-span-3"
-                    placeholder="Pharmacy name"
+                    placeholder="Enter pharmacy name"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="license" className="text-right">
-                    License *
-                  </Label>
+
+                <div>
+                  <Label htmlFor="license_number">License Number</Label>
                   <Input
-                    id="license"
+                    id="license_number"
                     value={newPharmacy.License_Number}
                     onChange={(e) =>
                       setNewPharmacy({
@@ -397,16 +685,14 @@ const PharmacistDashBoard = () => {
                         License_Number: e.target.value,
                       })
                     }
-                    className="col-span-3"
-                    placeholder="License number"
+                    placeholder="Enter license number"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="phone" className="text-right">
-                    Phone *
-                  </Label>
+
+                <div>
+                  <Label htmlFor="phone_number">Phone Number</Label>
                   <Input
-                    id="phone"
+                    id="phone_number"
                     value={newPharmacy.Phone_Number}
                     onChange={(e) =>
                       setNewPharmacy({
@@ -414,15 +700,12 @@ const PharmacistDashBoard = () => {
                         Phone_Number: e.target.value,
                       })
                     }
-                    className="col-span-3"
-                    placeholder="Phone number"
-                    readOnly={!!selectedPharmacist}
+                    placeholder="Enter phone number"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">
-                    Email *
-                  </Label>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -430,57 +713,45 @@ const PharmacistDashBoard = () => {
                     onChange={(e) =>
                       setNewPharmacy({ ...newPharmacy, Email: e.target.value })
                     }
-                    className="col-span-3"
-                    placeholder="Email address"
-                    readOnly={!!selectedPharmacist}
-                  />
-                  {selectedPharmacist && (
-                    <div className="col-span-3 col-start-2 text-xs text-gray-500">
-                      Email and phone auto-filled from user profile
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="opening-time" className="text-right">
-                    Opening Time *
-                  </Label>
-                  <Input
-                    id="opening-time"
-                    type="time"
-                    value={newPharmacy.Opening_Time}
-                    onChange={(e) =>
-                      setNewPharmacy({
-                        ...newPharmacy,
-                        Opening_Time: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
+                    placeholder="Enter email address"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="closing-time" className="text-right">
-                    Closing Time *
-                  </Label>
-                  <Input
-                    id="closing-time"
-                    type="time"
-                    value={newPharmacy.Closing_Time}
-                    onChange={(e) =>
-                      setNewPharmacy({
-                        ...newPharmacy,
-                        Closing_Time: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="opening_time">Opening Time</Label>
+                    <Input
+                      id="opening_time"
+                      type="time"
+                      value={newPharmacy.Opening_Time}
+                      onChange={(e) =>
+                        setNewPharmacy({
+                          ...newPharmacy,
+                          Opening_Time: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="closing_time">Closing Time</Label>
+                    <Input
+                      id="closing_time"
+                      type="time"
+                      value={newPharmacy.Closing_Time}
+                      onChange={(e) =>
+                        setNewPharmacy({
+                          ...newPharmacy,
+                          Closing_Time: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="delivery" className="text-right">
-                    Delivery Available
-                  </Label>
-                  <Input
-                    id="delivery"
+
+                <div className="flex items-center space-x-2">
+                  <input
                     type="checkbox"
+                    id="delivery_available"
                     checked={newPharmacy.Delivery_Available}
                     onChange={(e) =>
                       setNewPharmacy({
@@ -488,67 +759,12 @@ const PharmacistDashBoard = () => {
                         Delivery_Available: e.target.checked,
                       })
                     }
-                    className="col-span-3 w-4 h-4"
+                    className="rounded border-gray-300"
                   />
+                  <Label htmlFor="delivery_available">Delivery Available</Label>
                 </div>
-                <Button
-                  onClick={async () => {
-                    try {
-                      console.log("Creating pharmacy:", newPharmacy);
-                      toast("Adding pharmacy...");
 
-                      // Validate required fields
-                      if (
-                        !selectedPharmacist ||
-                        !newPharmacy.Pharmacy_Name ||
-                        !newPharmacy.License_Number ||
-                        !newPharmacy.Phone_Number ||
-                        !newPharmacy.Email ||
-                        !newPharmacy.Opening_Time ||
-                        !newPharmacy.Closing_Time
-                      ) {
-                        toast.error(
-                          "Please fill in all required fields (marked with *) and select a pharmacist"
-                        );
-                        return;
-                      }
-
-                      const pharmacyData = {
-                        ...newPharmacy,
-                        User_id: selectedPharmacist.User_id,
-                        Rating: newPharmacy.Rating || 0,
-                      };
-
-                      await pharmacyApi.create(pharmacyData);
-                      toast.success("Pharmacy created successfully!");
-
-                      // Reset form
-                      setSelectedPharmacist(null);
-                      setNewPharmacy({
-                        User_id: "",
-                        Pharmacy_Name: "",
-                        License_Number: "",
-                        Phone_Number: "",
-                        Email: "",
-                        Opening_Time: "",
-                        Closing_Time: "",
-                        Delivery_Available: false,
-                        Is_Verified: false,
-                        Rating: 0,
-                      });
-
-                      // Refresh pharmacies list
-                      const updatedPharmacies = await pharmacistApi.getAll();
-                      setPharmacies(updatedPharmacies);
-
-                      setIsSheetOpen(false);
-                    } catch (error) {
-                      console.error("Error creating pharmacy:", error);
-                      toast.error("Failed to create pharmacy");
-                    }
-                  }}
-                  className="mt-4 bg-purple-500 hover:bg-purple-700"
-                >
+                <Button onClick={handleCreatePharmacy} className="w-full">
                   Create Pharmacy
                 </Button>
               </div>
@@ -556,538 +772,37 @@ const PharmacistDashBoard = () => {
           </Sheet>
         </div>
 
-        {pharmacies.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No Pharmacies found.
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {pharmacies.map((pharmacy) => (
-              <div
-                key={pharmacy.Pharmacy_id}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
-                      User: {pharmacy.User_id}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300 mb-3">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Pharmacy Name:
-                        </span>
-                        {pharmacy.Pharmacy_Name}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          License Number:
-                        </span>
-                        {pharmacy.License_Number}
-                      </div>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full text-xs">
-                        {pharmacy.Phone_Number}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Email: {pharmacy.Email}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Closing Time: {formatTime(pharmacy.Closing_Time)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Delivery Available: {pharmacy.Delivery_Available}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Verification: {pharmacy.Is_Verified}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Rating: {pharmacy.Rating}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderOrders = () => {
-    if (!currentPharmacyId && user?.User_Type === "Pharmacist") {
-      return (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-yellow-800">
-            No pharmacy found for your account. Please contact an administrator
-            to set up your pharmacy.
-          </div>
-        </div>
-      );
-    }
-
-    if (ordersLoading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-600">Loading orders...</div>
-        </div>
-      );
-    }
-
-    if (ordersError) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-red-800">Error: {ordersError}</div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 text-red-600 underline"
-          >
-            Try again
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Orders ({orders.length})
-        </h2>
-        {orders.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No orders found.</div>
-        ) : (
-          <div className="grid gap-4">
-            {orders.map((order) => (
-              <div
-                key={order.Order_id}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
-                      Order #{order.Order_id}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                      <span>Patient ID: {order.Patient_id}</span>
-                      <span className="font-medium">${order.Total_Amount}</span>
-                      <span>
-                        {new Date(order.Order_Date).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {order.Order_Status === "Pending" && (
-                      <Clock className="w-4 h-4 text-yellow-500" />
-                    )}
-                    {order.Order_Status === "Delivered" && (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                    )}
-                    {(order.Order_Status === "Processing" ||
-                      order.Order_Status === "Shipped") && (
-                      <Package className="w-4 h-4 text-blue-500" />
-                    )}
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        order.Order_Status === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : order.Order_Status === "Delivered"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {order.Order_Status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderInventory = () => {
-    console.log("renderInventory called with:", {
-      currentPharmacyId,
-      userType: user?.User_Type,
-      inventoryLoading,
-      inventoryError,
-      inventoryLength: inventory.length,
-      inventory: inventory,
-    });
-
-    if (!currentPharmacyId && user?.User_Type === "Pharmacist") {
-      return (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-yellow-800">
-            No pharmacy found for your account. Please contact an administrator
-            to set up your pharmacy.
-          </div>
-        </div>
-      );
-    }
-
-    if (inventoryLoading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-600">Loading inventory...</div>
-        </div>
-      );
-    }
-
-    if (inventoryError) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-red-800">Error: {inventoryError}</div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 text-red-600 underline"
-          >
-            Try again
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Inventory ({inventory.length})
-          </h2>
-          <div className="flex gap-2">
-            <Button
-              onClick={async () => {
-                if (currentPharmacyId) {
-                  setInventoryLoading(true);
-                  try {
-                    const inventoryData =
-                      await pharmacyInventoryApi.findByPharmacy(
-                        currentPharmacyId
-                      );
-                    setInventory(inventoryData);
-                    toast.success("Inventory refreshed");
-                  } catch (error) {
-                    toast.error("Failed to refresh inventory");
-                  } finally {
-                    setInventoryLoading(false);
-                  }
-                }
-              }}
-              variant="outline"
-              size="sm"
-              disabled={inventoryLoading}
-            >
-              {inventoryLoading ? "Refreshing..." : "Refresh"}
-            </Button>
-          </div>
-        </div>
-
-        {inventory.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-4">
-              No inventory items found for pharmacy ID: {currentPharmacyId}
-            </div>
-            <div className="text-sm text-gray-400 mb-4">
-              Make sure products are added to the correct pharmacy.
-            </div>
-            <Button
-              onClick={async () => {
-                if (currentPharmacyId) {
-                  console.log(
-                    `Manually refreshing inventory for pharmacy ${currentPharmacyId}`
-                  );
-                  setInventoryLoading(true);
-                  try {
-                    const inventoryData =
-                      await pharmacyInventoryApi.findByPharmacy(
-                        currentPharmacyId
-                      );
-                    console.log("Manual refresh result:", inventoryData);
-                    setInventory(inventoryData);
-                    toast.success("Inventory refreshed");
-                  } catch (error) {
-                    console.error("Manual refresh error:", error);
-                    toast.error("Failed to refresh inventory");
-                  } finally {
-                    setInventoryLoading(false);
-                  }
-                }
-              }}
-              variant="outline"
-              size="sm"
-            >
-              Refresh Inventory
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {inventory.map((item) => (
-              <div
-                key={item.Inventory_id}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
-                      {item.medicine?.Medicine_Name ||
-                        `Medicine ID: ${item.Medicine_id}`}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                      <span>Stock: {item.Stock_Quantity}</span>
-                      <span>Batch: {item.Batch_Number}</span>
-                      <span>${item.Unit_Price}/unit</span>
-                      <span>
-                        Expires:{" "}
-                        {new Date(item.Expiry_Date).toLocaleDateString()}
-                      </span>
-                      <span>Supplier: {item.Supplier_Name}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {item.Stock_Quantity < 10 && (
-                      <XCircle className="w-4 h-4 text-red-500" />
-                    )}
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.Stock_Quantity < 10
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {item.Stock_Quantity < 10 ? "Low Stock" : "In Stock"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderActivity = () => {
-    if (loading || ordersLoading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-600">Loading activity data...</div>
-        </div>
-      );
-    }
-
-    if (error || ordersError) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-red-800">Error: {error || ordersError}</div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 text-red-600 underline"
-          >
-            Try again
-          </button>
-        </div>
-      );
-    }
-
-    const COLORS = [
-      "#0088FE",
-      "#00C49F",
-      "#FFBB28",
-      "#FF8042",
-      "#8884d8",
-      "#82ca9d",
-    ];
-
-    // Create stock data from real inventory
-    const stockData = inventory.map((item) => ({
-      name: item.medicine?.Medicine_Name || `Med-${item.Medicine_id}`,
-      current: item.Stock_Quantity,
-      minimum: 10, // Default minimum stock level
-    }));
-
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Pharmacies
-              </h3>
-              <Building2 className="w-5 h-5 text-blue-500" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {pharmacies.length}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Total registered pharmacies
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Orders
-              </h3>
-              <ShoppingCart className="w-5 h-5 text-purple-500" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {orders.length}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Total orders processed
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Inventory
-              </h3>
-              <Package className="w-5 h-5 text-green-500" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {inventory.length}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Products in inventory
-            </div>
-          </div>
-        </div>
-
-        {/* Charrt. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Order Status
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={orderStats}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(0)}%`
-                    }
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex space-x-8 px-6">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === tab.id
+                        ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                    }`}
                   >
-                    {orderStats.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+                    <Icon className="h-5 w-5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
-          {/* Stock Levels Chart */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Stock Levels
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={stockData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="current" fill="#82ca9d" name="Current Stock" />
-                  <Bar
-                    dataKey="minimum"
-                    fill="#8884d8"
-                    name="Minimum Required"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="p-6">
+            {activeTab === "Activity" && renderActivity()}
+            {activeTab === "Inventory" && renderInventory()}
+            {activeTab === "Orders" && renderOrders()}
+            {activeTab === "Pharmacies" && renderPharmacies()}
           </div>
         </div>
       </div>
-    );
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "Activity":
-        return renderActivity();
-      case "Pharmacies":
-        return renderPharmacies();
-      case "Orders":
-        return renderOrders();
-      case "Inventory":
-        return renderInventory();
-    }
-  };
-
-  return (
-    <div>
-      <div className="mb-8">
-        <nav className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            {
-              id: "Activity",
-              label: "Activity",
-              icon: <Activity className="w-5 h-5" />,
-            },
-            {
-              id: "Inventory",
-              label: "Inventory",
-              icon: <Package className="w-5 h-5" />,
-            },
-            {
-              id: "Pharmacies",
-              label: "Pharmacies",
-              icon: <Building2 className="w-5 h-5" />,
-            },
-            {
-              id: "Orders",
-              label: "Orders",
-              icon: <ShoppingCart className="w-5 h-5" />,
-            },
-          ].map((tab) => {
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex flex-col items-center gap-3 p-6 rounded-lg border-2 transition-all duration-200 font-medium ${
-                  activeTab === tab.id
-                    ? "border-purple-500 bg-blue-50 text-purple-600 shadow-md"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                {tab.icon}
-                <span className="font-medium text-sm">{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-      <div className="mb-8">{renderContent()}</div>
     </div>
   );
 };

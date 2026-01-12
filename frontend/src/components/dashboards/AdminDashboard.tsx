@@ -67,12 +67,9 @@ import { userApi } from "@/api/users";
 import { notificationApi } from "@/api/notifications";
 import type { User } from "@/api/interfaces/user";
 import type { Notification } from "@/api/interfaces/notification";
-import type { Doctors as Doctor } from "@/api/interfaces/doctor";
-import type { Pharmacist } from "@/api/interfaces/pharmacist";
 import { Textarea } from "../ui/textarea";
 import { doctorApi } from "@/api/doctors";
 import { pharmacistApi } from "@/api/pharmacists";
-import type { Patient } from "@/api/patients";
 
 type AdminTabType =
   | "overview"
@@ -100,7 +97,7 @@ const AdminDashboard = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [availableDoctors, setAvailableDoctors] = useState<User[]>([])
+  const [availableDoctors, setAvailableDoctors] = useState<User[]>([]);
 
   // Form states for user creation
   const [newUser, setNewUser] = useState({

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Bell,
   X,
-  Check,
   Pill,
   Calendar,
   CreditCard,

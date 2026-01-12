@@ -20,10 +20,10 @@ POST {{url}}/users
 Content-Type: application/json
 
 {
-  "Email": "admin@example.com",
+  "Email": "admin@admin.com",
   "Password": "Admin123!",
   "Phone_Number": "0715879708",
-  "User_Type": "Admin",
+  "User_Type": "Patient",
   "First_Name": "Aquinatta",
   "Last_Name": "Admin",
   "Date_of_Birth": "2002-02-10",

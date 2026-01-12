@@ -156,7 +156,7 @@ const Pharmacies = () => {
 
   // Add states for editing and viewing
   const [isEditMedicineOpen, setIsEditMedicineOpen] = useState(false);
-  const [isEditInventoryOpen, setIsEditInventoryOpen] = useState(false);
+
   const [isViewMedicineOpen, setIsViewMedicineOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
   const [editingInventory, setEditingInventory] =
@@ -433,27 +433,7 @@ const Pharmacies = () => {
     }
   };
 
-  const handleUpdateInventory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingInventory) return;
 
-    try {
-      setLoading(true);
-      await pharmacyInventoryApi.update(
-        editingInventory.Inventory_id!.toLocaleString(),
-        editingInventory
-      );
-      toast.success("Inventory updated successfully!");
-      setIsEditInventoryOpen(false);
-      setEditingInventory(null);
-      await refreshData();
-    } catch (error) {
-      console.error("Error updating inventory:", error);
-      toast.error("Failed to update inventory.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddMedicine = async (e: React.FormEvent) => {
     e.preventDefault();

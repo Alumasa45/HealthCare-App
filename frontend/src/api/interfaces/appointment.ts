@@ -1,4 +1,3 @@
-import type { Patient } from "../patients";
 import type { User } from "./user";
 
 export interface Appointment {
