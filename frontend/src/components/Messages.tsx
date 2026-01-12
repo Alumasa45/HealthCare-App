@@ -26,7 +26,7 @@ interface User extends Record<string, any> {
   lastSeen?: Date;
 }
 
-interface Message {
+interface LocalMessage {
   id: string;
   Sender_id: string;
   content: string;
@@ -37,10 +37,10 @@ interface Message {
   attachmentName?: string;
 }
 
-interface Chat {
+interface LocalChat {
   id: string;
   participants: User[];
-  lastMessage?: Message;
+  lastMessage?: LocalMessage;
   unreadCount: number;
   type: "direct" | "group";
   title?: string;
@@ -48,7 +48,7 @@ interface Chat {
 
 //Components.
 const ChatSidebar: React.FC<{
-  chats: Chat[];
+  chats: LocalChat[];
   selectedChatId: string | null;
   onChatSelect: (chatId: string) => void;
   onNewConversation: () => void;
@@ -220,7 +220,7 @@ const ChatSidebar: React.FC<{
   );
 };
 
-const MessageStatus: React.FC<{ status: Message["status"] }> = ({ status }) => {
+const MessageStatus: React.FC<{ status: LocalMessage["status"] }> = ({ status }) => {
   switch (status) {
     case "sending":
       return <Clock className="w-4 h-4 text-gray-400" />;
@@ -238,7 +238,7 @@ const MessageStatus: React.FC<{ status: Message["status"] }> = ({ status }) => {
 };
 
 const MessageBubble: React.FC<{
-  message: Message;
+  message: LocalMessage;
   isOwnMessage: boolean;
   user: User;
   showAvatar: boolean;
@@ -336,8 +336,8 @@ const MessageBubble: React.FC<{
 };
 
 const ChatWindow: React.FC<{
-  chat: Chat;
-  messages: Message[];
+  chat: LocalChat;
+  messages: LocalMessage[];
   currentUser: User;
   onSendMessage: (content: string, file?: File) => void;
 }> = ({ chat, messages, currentUser, onSendMessage }) => {
@@ -522,8 +522,8 @@ const ChatWindow: React.FC<{
 function Messages() {
   const { user } = useAuth();
   const {
-    chats,
-    messages,
+    chats: contextChats,
+    messages: contextMessages,
     selectedChatId,
     loading,
     error,
@@ -533,6 +533,20 @@ function Messages() {
   } = useChat();
   const [isNewConversationDialogOpen, setIsNewConversationDialogOpen] =
     useState(false);
+
+  // Convert context data to local types
+  const chats: LocalChat[] = contextChats.map(chat => ({
+    ...chat,
+    lastMessage: chat.lastMessage ? {
+      ...chat.lastMessage,
+      Sender_id: String(chat.lastMessage.Sender_id)
+    } : undefined
+  }));
+
+  const messages: LocalMessage[] = contextMessages.map(message => ({
+    ...message,
+    Sender_id: String(message.Sender_id)
+  }));
 
   const selectedChat = chats.find((chat) => chat.id === selectedChatId);
 

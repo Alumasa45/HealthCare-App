@@ -323,7 +323,7 @@ export function DoctorSlotManagement() {
   };
 
   const handleAddSlot = async () => {
-    // Use the selected doctor ID or fall back to a default
+    console.log("Adding slot with slots:", slots, handleAddSlot);
     const Doctor_id = getDoctorId() || selectedDoctorId || 1;
     console.log("Using Doctor_id for adding slot:", Doctor_id);
 
@@ -360,6 +360,7 @@ export function DoctorSlotManagement() {
   };
 
   const handleDeleteSlot = async (Slot_id: number) => {
+    console.log("Deleting slot:", Slot_id, handleDeleteSlot);
     try {
       setLoading(true);
       await slotApi.delete(Slot_id.toString());
@@ -374,7 +375,7 @@ export function DoctorSlotManagement() {
   };
 
   const handleAddSchedule = async () => {
-    // Use the selected doctor ID or fall back to a default
+    console.log("Adding schedule with schedules:", schedules, handleAddSchedule);
     const Doctor_id = getDoctorId() || selectedDoctorId || 1;
     console.log("Using Doctor_id for schedule:", Doctor_id);
 
@@ -419,6 +420,7 @@ export function DoctorSlotManagement() {
   };
 
   const handleDeleteSchedule = async (scheduleId: number) => {
+    console.log("Deleting schedule:", scheduleId, handleDeleteSchedule);
     try {
       setLoading(true);
       await scheduleApi.delete(scheduleId);

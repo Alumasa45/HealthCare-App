@@ -695,9 +695,10 @@ const Billing: React.FC = () => {
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
-                                    onClick={() =>
-                                      handlePayNow(item.id, item.type)
-                                    }
+                                    onClick={() => {
+                                      setPayingBillId(item.id);
+                                      handlePayNow(item.id, item.type);
+                                    }}
                                     disabled={payingBillId === item.id}
                                     className="bg-green-600 hover:bg-green-700"
                                   >

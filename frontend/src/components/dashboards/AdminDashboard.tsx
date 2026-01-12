@@ -391,7 +391,7 @@ const AdminDashboard = () => {
       const DoctorUsers = allUsers.filter(
         (user) => user.User_Type === "Doctor"
       );
-      setAvailableDoctors(DoctorUsers);
+      setAvailableUsers(DoctorUsers);
     } catch (error) {
       console.log("Error fetching Doctors:", error);
       toast.error("Failed to load doctors")

@@ -196,6 +196,7 @@ export function AppointmentBooking() {
 
   useEffect(() => {
     const fetchSchedules = async () => {
+      console.log("Fetching schedules:", schedules);
       if (!selectedDoctor) return;
 
       try {
@@ -272,6 +273,7 @@ export function AppointmentBooking() {
               : slot.Slot_Time.toISOString().slice(11, 16),
         }))
       );
+      console.log("Available slots set:", availableSlots);
 
       if (filteredSlots.length > 0) {
         const firstSlot = filteredSlots[0];
